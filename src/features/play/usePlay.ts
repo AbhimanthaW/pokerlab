@@ -77,7 +77,7 @@ export function playReducer(state: Controller, command: Command): Controller {
     };
   }
 }
-export function usePlay() {
+export function usePlay(paused = false) {
   const [state, dispatch] = useReducer(playReducer, undefined, (): Controller =>
     loadPlayData(),
   );
@@ -95,6 +95,7 @@ export function usePlay() {
       !s.actor ||
       s.actor === "you" ||
       state.error
+      || paused
     )
       return;
     const observation = observeNpc(s, s.actor);
@@ -125,7 +126,7 @@ export function usePlay() {
       state.pacing === "instant" ? 0 : state.pacing === "relaxed" ? 1300 : 550,
     );
     return () => window.clearTimeout(timer);
-  }, [s, state.pacing, state.error]);
+  }, [s, state.pacing, state.error, paused]);
   return {
     ...state,
     start: (config: SessionConfig) => {

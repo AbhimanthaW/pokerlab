@@ -30,3 +30,12 @@ Commands carry session identity and revision, so obsolete timers or duplicate cl
 Play restores the full active deck/card locations, contributions, positions, actor and 100 completed public records. Corrupt saves remain untouched until explicit discard. Learn’s existing key/schema are unchanged. getPlayView masks opponents and excludes deck/burns; NPC policy receives a narrower allowlist and never receives Session. Browser-local saves remain inspectable by their owner; this is not an adversarial multiplayer sandbox.
 
 Detailed algorithms are in V2-ENGINE-DESIGN.md and V2-NPC-DESIGN.md.
+
+
+## V3 immersive presentation
+
+features/immersive-play/ contains the viewport shell, preferences, modal, lifecycle/fullscreen hooks, public presentation adapter/event queue, lazy scene components and audio manager. The App conditionally removes its sidebar/topbar for Play and retains the mounted Learn practice state. The existing Play component gained a ControlledPlay renderer so fallback shares the shell's single usePlay controller. The controller gained only a pause input; the complete domain directory is unchanged.
+
+Scene modules are PokerRoom/PokerTable3D, PokerScene/CameraDirector, NPCCharacter3D, Card3D and ChipStack3D. No scene component receives hidden state or an engine dispatcher. Camera and quality calculations live in presentation.ts. Presentation effects are cancellable, bounded and subordinate to snapshots. Audio has one owner with explicit activation, independent levels, page-visibility handling and teardown. V3 preferences are isolated from existing schemas.
+
+The rendering architecture, coordinate conventions and lifecycle details are in V3-RENDERING-ARCHITECTURE.md. The original music generator and all visual assets are local. Browser/GPU acceptance is still pending; see V3-QA-REPORT.md.

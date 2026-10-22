@@ -1,23 +1,21 @@
-# PokerLab V2 status
+# PokerLab V3 status
 
-**Implemented locally; browser acceptance remains outstanding.** No deployment, cloud resources, accounts or financial integration.
+**Implementation present; V3 remains incomplete under the visual/browser acceptance gate.** No deployment or financial integration.
 
-The actual V1 repository independently passed TypeScript, lint, 89 routine tests and build in the resumed audit. The saved V2 source was recovered without replacing V1 first, audited, verified, and then applied to this existing application. Its evaluator is byte-identical to V1. The original V1 ZIP is preserved separately.
+The existing V2 baseline passed 152 routine tests, strict TypeScript, lint and build. V3 adds a full-viewport Play shell without the global sidebar, a modeled procedural 3D room/table, distinct seated avatars, physical cards, instanced representative chips, bounded camera, presentation effects, minimal legal-action HUD, pause/history/result overlays, optional fullscreen, independent local audio and quality settings. Renderer failure retains the active session in the existing 2D interface.
 
-Play includes fresh secure dealing, fixed blinds, legal no-limit action, full/short/cumulative raises, pots/refunds/ties/odd chips, conserved chips, NPCs with restricted observations, elimination, last-player-standing outcomes, active persistence and bounded public history. The final review added cross-participant card validation at standalone pot resolution and removed random-session survival assumptions from the settlement E2E scenario.
-
-| Fresh verification | Observed result |
+| Verification | Result |
 | --- | --- |
-| Strict TypeScript (including E2E and QA fixtures), lint, production build | Passed |
-| Routine tests | 152 passed; optional census skipped in normal run |
-| Separate exhaustive census | Passed: 2,598,960 five-card hands |
-| Stress | 5,000 hands / 26,313 transitions / 710 sessions / 1,535 eliminations / 360 sole-survivor outcomes; no invariant failure |
-| Local Vite HTTP readiness | HTTP 200 at 127.0.0.1:5173 |
-| Playwright | Current suite collects 17 cases. Previous 16-case run blocked before page execution by Chrome launch abort; focused cached-headless retry also blocked by macOS bootstrap permission denial |
-| Fresh desktop/mobile screenshot and interaction review | Blocked by browser launch; no current pass claimed |
+| Strict TypeScript and lint | Passed |
+| Routine tests | 189 passed: 152 existing + 37 V3; optional exhaustive census skipped |
+| Production build | Passed; lazy scene size warning retained |
+| Domain integrity | All V1/V2 domain files byte-identical to V3 baseline |
+| Stress regression | Unchanged 5,000-hand invariant test passed |
+| Browser suite | 28 cases collected; focused V3 attempt blocked at Chromium launch |
+| Actual rendered screenshots, audio listening, FPS/memory/device measurements | Pending; no pass claimed |
 
-Historical managed-browser observations from the recovered delivery are retained in V2-QA-REPORT.md. They are not fresh acceptance results for this workspace. Full definition-of-done acceptance requires a successful E2E run and fresh desktop/mobile visual inspection.
+The current blocker is macOS Chromium Mach-port bootstrap Permission denied (1100), before page execution. New component tests use a mocked scene and do not establish rendering quality. Full acceptance requires actual desktop/mobile inspection, complete-session UI testing, real fullscreen/audio review and performance measurement.
 
-Documented simplifications include moving live button, simultaneous showdown tabling and synchronous forced runouts. NPCs are heuristic, not solvers. Saves are unencrypted/browser-local with latest 100 completed records, no multi-tab coordination/export/import/sync. Use one Play tab at a time. Elapsed time includes time away. No sound/multiplayer/variants/refill/rebuy/rewards.
+Known limits: procedural rather than skeletal avatars; representative rather than one-mesh-per-chip stacks; heuristic Auto quality rather than measured adaptive FPS; a roughly 940 kB lazy scene chunk and 6.44 MB local WAV; simplified digital TDA procedures; heuristic NPCs; single-tab unencrypted saves. Camera framing and readability need visual review. V3 does not add multiplayer, accounts, purchases, rebuys, real stakes or deployment.
 
-Next: run browser acceptance in an environment that allows Chromium subprocesses, review the five viewport sizes, then add cross-browser/device coverage and richer learning explanations.
+Next priorities: complete the browser/manual visual gate at all six target sizes, measure actual device performance and resource retention, then refine lighting/animation/character art from observed evidence. The V2 QA history is retained separately.

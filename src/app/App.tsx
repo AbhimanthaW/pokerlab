@@ -28,7 +28,7 @@ import {
   type AppData,
 } from "../lib/storage";
 import Practice from "../features/Practice";
-import Play from "../features/play/Play";
+import ImmersivePlay from "../features/immersive-play/ImmersivePlay";
 import Trainer from "../features/Trainer";
 import Reference from "../features/Reference";
 import Progress from "../features/Progress";
@@ -105,7 +105,7 @@ function PokerLab() {
   const stats = summarize(data.records, data.totals);
   return (
     <div
-      className={`app-shell ${data.settings.reducedMotion ? "reduce-motion" : ""} ${data.settings.fourColor ? "four-color" : ""}`}
+      className={`app-shell ${page === "play" ? "is-immersive" : ""} ${data.settings.reducedMotion ? "reduce-motion" : ""} ${data.settings.fourColor ? "four-color" : ""}`}
       style={
         {
           "--motion-duration":
@@ -127,7 +127,7 @@ function PokerLab() {
       >
         Skip to content
       </a>
-      <aside className="sidebar">
+      {page !== "play" && <aside className="sidebar">
         <a
           className="brand"
           href="#practice"
@@ -179,11 +179,11 @@ function PokerLab() {
           <span>
             Just you and the cards.<small>No accounts. No stakes.</small>
           </span>
-          <span className="version">V2.0</span>
+          <span className="version">V3.0</span>
         </div>
-      </aside>
+      </aside>}
       <div className="main-shell">
-        <header className="topbar">
+        {page !== "play" && <header className="topbar">
           <div className="breadcrumb">
             Your practice space <ChevronRight size={13} />
             <span>{pages.find((p) => p.id === page)?.label}</span>
@@ -194,9 +194,9 @@ function PokerLab() {
             <span className="topbar-divider" />
             <span className="profile-avatar">Y</span>
           </div>
-        </header>
+        </header>}
         <main id="main-content" tabIndex={-1}>
-          {warning && (
+          {warning && page !== "play" && (
             <div className="storage-warning" role="status">
               {warning}
               <button
@@ -207,7 +207,7 @@ function PokerLab() {
               </button>
             </div>
           )}
-          {page === "play" && <Play onLearn={() => navigate("practice")} />}
+          {page === "play" && <ImmersivePlay onLearn={() => navigate("practice")} reducedMotion={data.settings.reducedMotion} fourColor={data.settings.fourColor} />}
           <div hidden={page !== "practice"}>
             <Practice
               game={game}

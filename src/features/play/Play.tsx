@@ -15,6 +15,11 @@ import "./play.css";
 
 export default function Play({ onLearn }: { onLearn: () => void }) {
   const controller = usePlay();
+  return <ControlledPlay onLearn={onLearn} controller={controller} />;
+}
+export function ControlledPlay({ onLearn, controller }: {
+  onLearn: () => void; controller: ReturnType<typeof usePlay>;
+}) {
   const { session: s } = controller;
   const [config, setConfig] = useState<SessionConfig>({ ...DEFAULT_CONFIG });
   const [confirmEnd, setConfirmEnd] = useState(false);

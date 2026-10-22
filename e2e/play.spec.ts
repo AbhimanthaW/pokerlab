@@ -94,6 +94,11 @@ async function seed(page: Page, session: Session, pacing = "instant") {
   await page.goto("/#play");
 }
 test.beforeEach(async ({ page }) => {
+  // Keep the complete V2 acceptance flows exercised through the retained 2D renderer.
+  await page.addInitScript(() => localStorage.setItem("pokerlab.immersive.v3", JSON.stringify({
+    version: 1, preferences: { display: "2d", quality: "auto", cinematic: true,
+      muted: true, master: .55, music: .4, effects: .45, ambient: .18 },
+  })));
   page.on("pageerror", (error) => {
     throw error;
   });
@@ -228,6 +233,7 @@ test("corrupt Play save can be discarded without clearing Learn data", async ({
   await expect(
     page.getByRole("button", { name: "Start session", exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Return to Learn", exact: true }).click();
   await page.getByRole("link", { name: "Hand Trainer", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Check answer", exact: true }),

@@ -1,6 +1,6 @@
-# Testing
+# Testing PokerLab V3
 
-Node.js 22.12+ and npm ci are required.
+Node.js 22.12+ and npm ci are required. Run from this directory:
 
 ```sh
 npm run typecheck
@@ -8,39 +8,28 @@ npm run lint
 npm test
 npm run build
 POKERLAB_EXHAUSTIVE=1 npm test -- src/domain/census.test.ts
-```
-
-**152 routine tests pass**, including all 89 original V1 tests. One exhaustive test is optional; its separate run passed all 2,598,960 five-card combinations against exact category totals. Targeted fixtures cover all categories, tie/kicker ordering, wheel/royal hands, best-of-seven and equivalent optimal selections.
-
-## V2 coverage
-
-- engine.test.ts: dealing/positions, genuine heads-up transition after elimination, partial blinds, BB option, actions/rejections, full/short/cumulative raises, per-player reopening, short opening, partial calls, fold wins, independent pots, folded contributions, refunds, ties/odd chips and session outcomes.
-- npc.test.ts: all profiles/difficulties, legal/reproducible actions, different aggression, frozen explicit allowlists, inaccessible-card independence and malformed-output fallback.
-- playStorage.test.ts: exact restore, stale revisions, separate Learn data, malformed/unsupported/corrupt snapshots, denied access, card/chip/actor errors, historical payout reconciliation and 100-hand bound.
-- Play.test.tsx: seven component/controller regressions covering setup, legal controls, invalid amounts, hidden cards, remount, StrictMode timers, cancellation, double clicks, explicit corrupt-save discard, cross-session token guards and invalid-command diagnostics.
-- stress.test.ts: 5,000 complete seeded hands, mixed varied legal choices/NPCs, one to five opponents and all difficulties; assertions after EVERY transition and a reproducible-seed deadlock guard.
-
-Stress observed 26,313 transitions, 710 sessions, 1,535 eliminations and 360 sole-survivor outcomes without card, actor, chip, contribution-log, historical-payout or lifecycle violations.
-
-```sh
 npm test -- src/domain/play/stress.test.ts --reporter=verbose --silent=false
 ```
 
-## End-to-end
+## Automated results
+
+189 routine tests pass: all 152 pre-V3 tests plus 37 new tests. Strict TypeScript includes src, E2E and QA fixtures; lint and production build pass. The V1/V2 domain directory is unchanged. The ordinary suite includes the 5,000-hand seeded stress test with invariant assertions after every transition. The exhaustive five-card census is optional in routine runs; its earlier separate V2 run passed all 2,598,960 hands. Do not infer a fresh exhaustive run from a skipped routine test.
+
+V3 presentation.test.ts covers public visibility, legitimate showdown cards, silent restoration, stale/duplicate events, cancellation, bounded rapid queues, exact snapshot convergence, seat anchors, camera limits and quality choices. preferences.test.ts covers schema isolation, recovery and explicit fullscreen/rejection. AudioManager.test.ts covers activation, singleton playback resources, independent levels, inactive behavior, cleanup, async unmount, autoplay rejection and WAV validity/duration. ImmersivePlay.test.tsx covers sidebar removal/Learn return, shared-controller display switching, renderer fallback, settings/focus/Escape, StrictMode cleanup and NPC pause/resume. Its scene is mocked; it is not a WebGL or screenshot test. cardMotion.test.ts uses real Three.js Groups with a controlled frame hook to verify reveal/placement lifecycles and stable texture identity across cloned states. VisibleCards.test.tsx verifies flop/turn/river isolation and stable displayed-card nodes.
+
+## Browser suite
 
 ```sh
 npx playwright install chromium
 npm run test:e2e
 ```
 
-17 committed cases: six V1 regressions, eleven V2 cases including five widths (320/390/768/1280/1600), setup, human/NPC actions, pots, next hand, persistence, corruption, victory and human elimination. Fixtures are test-only, never ordinary Play controls. POKERLAB_CHROMIUM_PATH can select a compatible installed executable; PLAYWRIGHT_BASE_URL reuses an existing server. Otherwise the config launches Vite at localhost:5173. Reports/captures are ignored generated output.
+28 collected cases: six V1 regressions, eleven retained V2 flows in the 2D renderer, and eleven V3 cases. V3 covers actual canvas/labels/control bounds at 1920x1080, 1440x900, 1280x800, 768x1024, 390x844 and 320x640; switching/Learn/refresh; context loss; fullscreen rejection; final victory and early human elimination. Browser fixtures are test-only and do not choose ordinary game outcomes. POKERLAB_CHROMIUM_PATH selects a compatible installed browser; PLAYWRIGHT_BASE_URL reuses an existing server. The default config starts Vite on localhost:5173.
 
-**Current limitation:** the recovered delivery reported invalid browser downloads. In this resumed macOS audit, all 16 then-existing cases were blocked at installed Chrome launch (SIGABRT). A focused retry with the installed headless shell failed at `bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer: Permission denied (1100)`, before page execution. The improved suite now collects 17 cases. No standalone passing result is claimed; run outside this browser-launch restriction.
+Current result: the focused V3 desktop attempt failed at browser launch, before page assertions, with bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer: Permission denied (1100), followed by SIGTRAP. No passing browser result or rendered screenshot is claimed. No browser restrictions were bypassed. Rerun in a normal environment that allows Chromium subprocesses.
 
-The ordinary-dealing smoke case permits a blind win before the human turn. A separate legal engine-built river fixture verifies settlement/next-hand/refresh without assuming the human survives an arbitrary random first hand. TypeScript checks E2E and development fixtures as well as src.
+## Manual visual/audio/performance gate
 
-## Historical available-browser checks
+Use V3-QA-REPORT.md's checklist. Inspect actual room/table/characters/cards/chips, seat/order markers, lighting, camera limits/reset, all six viewport sizes, no control overlap and card readability. Complete a session, review pots/history, refresh mid-hand, return to Learn and retry 2D/3D. Test real fullscreen entry/Escape and renderer context loss without losing the hand.
 
-The recovered delivery reported that live browser interaction separately verified ordinary Play through showdown/next hand, exact refresh, final all-in victory, early elimination, mobile controls, V1 hand completion and trainer grading. The development-only qa/viewport.html provides actual iframe CSS viewports; qa/fixtures.ts supplies legal deterministic scenarios only there. Both are excluded from production imports/build.
-
-Client/scroll widths matched at 320/390/768/1280/1600 iframe widths (client excludes scrollbar). Screenshots reviewed at 320/390/768/1280; 1600 full-page capture timed out. These historical checks were not repeated in this macOS audit and are not the committed standalone suite and do not establish real touch-device, Firefox/Safari or formal screen-reader coverage. See V2-QA-REPORT.md.
+Listen through the full music piece and loop; test every volume/mute, effects, inactive-tab behavior and repeated Play entry/exit. Measure FPS/frame time, draw calls, memory and repeated GPU/audio cleanup on real desktop/mobile hardware. No FPS target is claimed achieved yet. The Vite lazy-scene chunk size warning is documented rather than suppressed. Formal screen-reader, physical touch-device, Firefox and Safari checks remain pending.
