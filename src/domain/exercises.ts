@@ -1,4 +1,5 @@
 import { createDeck, parseCards, shuffle } from "./cards";
+import { uniqueId } from "./id";
 import { compareHands, evaluate } from "./evaluation";
 import type {
   Answer,
@@ -119,7 +120,7 @@ export function generateExercise(
     if (kind === "comparison") otherCards = deck.slice(count, count * 2);
   }
   return {
-    id: crypto.randomUUID(),
+    id: uniqueId(),
     kind,
     cards,
     otherCards,

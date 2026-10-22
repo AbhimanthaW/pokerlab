@@ -1,72 +1,46 @@
 # Testing
 
-Run from the project directory after `npm ci` with Node.js 22.12 or newer.
-
-## Routine checks
+Node.js 22.12+ and npm ci are required.
 
 ```sh
 npm run typecheck
 npm run lint
 npm test
 npm run build
-```
-
-Vitest uses jsdom and React Testing Library setup. Tests live beside the modules they exercise. The exhaustive census is intentionally skipped during a normal test run.
-
-## Coverage
-
-- **Deck:** 52 unique canonical cards, rank/suit validation, deterministic injected shuffle, unchanged source deck, removal, correct dealing, and exhaustion.
-- **Evaluator:** all nine categories; royal and wheel straight flushes; Ace-high straights; full house versus flush; competing trips and pairs; every kicker position; exact and community-only ties; best five of six/seven; equivalent selections; duplicate and invalid cards.
-- **Game:** one through five opponents, round-robin private cards, phase/card counts, burn sequence, hidden information, complete showdown, multiple winners, restart/reset, malformed starts, and invalid transitions.
-- **Exercises:** correct/incorrect/skipped grading, best-five equivalence, invalid selections, comparison kickers/ties, and legal generated examples across all three difficulties.
-- **Predictions and probability:** grading from actual hidden hands; ties and skips; rejected incomplete states; visible-card-only probability and invalid input.
-- **App UI:** table visibility/progression, immediate feedback, single submission, skipped accounting, navigation continuity, session-unique records, next-hand opponent preference, keyboard card selection, skip-link routing, and collapsed-navigation accessible names.
-- **Storage:** missing/corrupt/unsupported schemas, validated preferences/cards/timestamps, denied storage access, deduplication, skip accounting, bounded detailed history, and lifetime totals after reload.
-
-## Exhaustive evaluator audit
-
-```sh
 POKERLAB_EXHAUSTIVE=1 npm test -- src/domain/census.test.ts
 ```
 
-This evaluates **all 2,598,960 distinct five-card hands** and compares category counts against the independently derived exact census:
+**152 routine tests pass**, including all 89 original V1 tests. One exhaustive test is optional; its separate run passed all 2,598,960 five-card combinations against exact category totals. Targeted fixtures cover all categories, tie/kicker ordering, wheel/royal hands, best-of-seven and equivalent optimal selections.
 
-| Category        |     Hands |
-| --------------- | --------: |
-| High Card       | 1,302,540 |
-| One Pair        | 1,098,240 |
-| Two Pair        |   123,552 |
-| Three of a Kind |    54,912 |
-| Straight        |    10,200 |
-| Flush           |     5,108 |
-| Full House      |     3,744 |
-| Four of a Kind  |       624 |
-| Straight Flush  |        40 |
+## V2 coverage
 
-Royal flushes are included among straight flushes. The census checks category classification comprehensively; targeted tests separately check comparison ordering and best-of-seven selection.
+- engine.test.ts: dealing/positions, genuine heads-up transition after elimination, partial blinds, BB option, actions/rejections, full/short/cumulative raises, per-player reopening, short opening, partial calls, fold wins, independent pots, folded contributions, refunds, ties/odd chips and session outcomes.
+- npc.test.ts: all profiles/difficulties, legal/reproducible actions, different aggression, frozen explicit allowlists, inaccessible-card independence and malformed-output fallback.
+- playStorage.test.ts: exact restore, stale revisions, separate Learn data, malformed/unsupported/corrupt snapshots, denied access, card/chip/actor errors, historical payout reconciliation and 100-hand bound.
+- Play.test.tsx: seven component/controller regressions covering setup, legal controls, invalid amounts, hidden cards, remount, StrictMode timers, cancellation, double clicks, explicit corrupt-save discard, cross-session token guards and invalid-command diagnostics.
+- stress.test.ts: 5,000 complete seeded hands, mixed varied legal choices/NPCs, one to five opponents and all difficulties; assertions after EVERY transition and a reproducible-seed deadlock guard.
 
-## Browser tests
+Stress observed 26,313 transitions, 710 sessions, 1,535 eliminations and 360 sole-survivor outcomes without card, actor, chip, contribution-log, historical-payout or lifecycle violations.
+
+```sh
+npm test -- src/domain/play/stress.test.ts --reporter=verbose --silent=false
+```
+
+## End-to-end
 
 ```sh
 npx playwright install chromium
 npm run test:e2e
 ```
 
-Playwright browser installation is needed once per environment unless the configured browser is already installed. Browser checks must cover a complete table hand, answer submission, hidden-card reveal, a new hand, persisted progress after reload, trainer submission, and a mobile viewport. Use the Playwright configuration for the actual server and browser selection.
+17 committed cases: six V1 regressions, eleven V2 cases including five widths (320/390/768/1280/1600), setup, human/NPC actions, pots, next hand, persistence, corruption, victory and human elimination. Fixtures are test-only, never ordinary Play controls. POKERLAB_CHROMIUM_PATH can select a compatible installed executable; PLAYWRIGHT_BASE_URL reuses an existing server. Otherwise the config launches Vite at localhost:5173. Reports/captures are ignored generated output.
 
-Earlier implementation notes report six Playwright scenarios passing in local Chromium 153: full hand through review/restart, all trainer types, persistence and reset, and five-opponent layouts at 320/390/768px. Those notes record desktop showdown and responsive table/trainer screenshot review with no console or page errors. Firefox and Safari were not tested. In the resumed session, `npm run test:e2e` was attempted again but blocked before browser launch: Vite could not listen on 127.0.0.1:5173 (EPERM). These historical results are not a fresh browser pass; rerun locally with server permissions.
+**Current limitation:** the recovered delivery reported invalid browser downloads. In this resumed macOS audit, all 16 then-existing cases were blocked at installed Chrome launch (SIGABRT). A focused retry with the installed headless shell failed at `bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer: Permission denied (1100)`, before page execution. The improved suite now collects 17 cases. No standalone passing result is claimed; run outside this browser-launch restriction.
 
-For an existing compatible Chromium binary, set `POKERLAB_CHROMIUM_PATH` to its absolute executable path before running the suite. The default uses Playwright’s installed Chromium. No personal machine path is embedded in the config. The tests use shuffled hands and assert invariant behavior; deterministic card and randomness fixtures live in domain tests. Reports and captures are under `playwright-report/` and `test-results/`, both ignored source artifacts.
+The ordinary-dealing smoke case permits a blind win before the human turn. A separate legal engine-built river fixture verifies settlement/next-hand/refresh without assuming the human survives an arbitrary random first hand. TypeScript checks E2E and development fixtures as well as src.
 
-## Verification record
+## Historical available-browser checks
 
-| Check                                     | Observed result                      |
-| ----------------------------------------- | ------------------------------------ |
-| Strict TypeScript                         | Passed                               |
-| ESLint                                    | Passed                               |
-| Normal unit/domain/storage run            | 89 passed; 1 optional census skipped |
-| Separate exhaustive five-card census      | Passed: all 2,598,960 hands          |
-| Production build                          | Passed                               |
-| UI/component tests                        | 8 passed (included in the 89)        |
-| Playwright end-to-end                     | Current run blocked: localhost EPERM; earlier notes report 6 passed |
-| Desktop, tablet, mobile visual inspection | Earlier notes: 1440/768/390/320px; current inspection blocked |
+The recovered delivery reported that live browser interaction separately verified ordinary Play through showdown/next hand, exact refresh, final all-in victory, early elimination, mobile controls, V1 hand completion and trainer grading. The development-only qa/viewport.html provides actual iframe CSS viewports; qa/fixtures.ts supplies legal deterministic scenarios only there. Both are excluded from production imports/build.
+
+Client/scroll widths matched at 320/390/768/1280/1600 iframe widths (client excludes scrollbar). Screenshots reviewed at 320/390/768/1280; 1600 full-page capture timed out. These historical checks were not repeated in this macOS audit and are not the committed standalone suite and do not establish real touch-device, Firefox/Safari or formal screen-reader coverage. See V2-QA-REPORT.md.

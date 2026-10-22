@@ -1,40 +1,32 @@
 # Architecture
 
-PokerLab is a client-only application. React renders the interface; framework-independent domain modules own every poker rule. There is no application server or remote data store. Vite is the local development and production build tool.
+Client-only React/strict TypeScript/Vite application. Domain functions own all rules; UI never independently changes chips, cards, legal actions or outcomes. No backend or remote data store.
 
-## Module boundaries
+## Preserved Learn boundary
 
-| Module                      | Responsibility                                                                                                                 |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `src/domain/types.ts`       | Typed card, hand, game, answer, exercise, result, and preference contracts.                                                    |
-| `src/domain/cards.ts`       | Canonical card identities, deck validation, unbiased shuffle, injected test randomness, dealing, removal, and fixture parsing. |
-| `src/domain/evaluation.ts`  | Five-card evaluation, best-of-six/seven combinations, descriptions, and lexicographic comparisons.                             |
-| `src/domain/game.ts`        | Explicit table transitions, dealing with burns, showdown winners, and safe player visibility projection.                       |
-| `src/domain/exercises.ts`   | Legal random and curated trainer problems; evaluator-based recognition, comparison, selection, and skip grading.               |
-| `src/domain/prediction.ts`  | River prediction grading against actual hands, including tied winners.                                                         |
-| `src/domain/probability.ts` | Ace probability conditional only on visible cards.                                                                             |
-| `src/components/Cards.tsx`  | Accessible card rendering and selectable card rows; no poker evaluation.                                                       |
-| `src/features/`             | Practice, Trainer, Reference, Progress, and Settings screens.                                                                  |
-| `src/lib/storage.ts`        | Schema validation, safe recovery, bounded history, lifetime counts, and progress summaries.                                    |
-| `src/app/App.tsx`           | Hash navigation, application reducer, persisted data, settings, storage warnings, and an error boundary.                       |
-| `src/styles.css`            | Responsive tabletop styling, design tokens, visible focus, card transitions, reduced-motion and four-color modes.              |
+V1 domain/cards.ts owns canonical identities, validation, cryptographic unbiased shuffle and deterministic injection. evaluation.ts evaluates all five-card subsets and compares structured tuples. game.ts remains the educational table reducer with burns, showdown and visibility projection. exercises.ts, prediction.ts and probability.ts retain actual-state grading and visible-card probability. Card components render accessible symbols without implementing rules.
 
-## State flow
+App owns hash navigation, the V1 reducer, shared settings and progress. Practice stays mounted across navigation; Trainer records each exercise once. Learn’s pokerlab.v1 save retains validated preferences, lifetime totals and 500 detailed records (20 shown). Active Learn hands reset on reload; completed results persist. The secure domain/id.ts helper replaces randomUUID dependency on local HTTP hosts.
 
-`App` owns the table through `useReducer(gameReducer, initialGame)`. Practice dispatches typed actions; the reducer permits only valid phase transitions. It returns unchanged state for invalid transitions. Opponent card components receive the visibility projection rather than raw private cards before showdown.
+## Play modules
 
-Practice holds transient answer and selection state for the current hand. Its per-session UUID and hand/street/exercise keys prevent duplicate progress records and collisions across reloads. The Practice component stays mounted while navigating so an active hand survives page changes. Trainer owns its current exercise, selection, and locked feedback state; its submit guard records each result once.
+| Module | Responsibility |
+| --- | --- |
+| domain/play/types.ts | Sessions, seats, commands, legal descriptors, pots/history/lifecycle |
+| domain/play/engine.ts | Creation, dealing, positions, legality, scheduling, forced streets, settlement, elimination, public projection |
+| domain/play/pots.ts | Contribution caps, eligibility, refunds, pot awards and odd chips |
+| domain/play/invariants.ts | Runtime card/lifecycle/chip/log/history/payout validation |
+| domain/play/observation.ts | Explicit detached frozen NPC allowlist |
+| domain/play/policy.ts | Personality/difficulty heuristic and safe legal fallback |
+| features/play/usePlay.ts | Command reducer, persistence synchronization, cancellable NPC presentation |
+| features/play/Play.tsx | Setup, table and lifecycle screens |
+| features/play/ActionControls.tsx | Accessible legal total amounts/slider/commands |
+| features/play/HandHistory.tsx | Public actions, tabled hands, awards and stack changes |
+| lib/playStorage.ts | Separate schema-2 save/load and invalid-save quarantine |
+| qa/ | Development-only actual iframe viewports and deterministic fixtures |
 
-Grading returns a typed result from the same evaluator used at showdown. `onRecord` appends it through a functional application-state update. Settings update shared preferences; opponent changes apply when the next hand starts. Reload deliberately discards the active hand.
+Commands carry session identity and revision, so obsolete timers or duplicate clicks cannot act on a later/new session. Setup and next-hand randomness are created outside React’s reducer. Domain forced transitions resolve synchronously; timers only pace display. Cleanup cancels work on turn, pace and navigation changes. The controller asserts new state and retains the last valid state on errors. Storage effects warn on failure without disabling in-memory play.
 
-## Persistence
+Play restores the full active deck/card locations, contributions, positions, actor and 100 completed public records. Corrupt saves remain untouched until explicit discard. Learn’s existing key/schema are unchanged. getPlayView masks opponents and excludes deck/burns; NPC policy receives a narrower allowlist and never receives Session. Browser-local saves remain inspectable by their owner; this is not an adversarial multiplayer sandbox.
 
-The `pokerlab.v1` localStorage entry has a versioned schema: `version`, `settings`, `records`, and `totals`. No personal information is requested or stored.
-
-Every loaded setting, result, card identity, category, timestamp, count, and totals breakdown is validated. Missing data receives defaults. Damaged or unsupported data produces a visible recovery warning. Recoverable settings or recent records are retained where valid; inconsistent lifetime totals are rebuilt from retained history. Storage read/write failures leave practice usable in memory and explain the persistence limitation.
-
-Detailed history is bounded to 500 unique results. Lifetime totals retain correct, incorrect, and skipped counts, exercise-type breakdowns, and missed categories beyond that bound. Progress displays the most recent 20 detailed explanations. Accuracy excludes skips; completed means answered correctly or incorrectly.
-
-## Testing boundaries
-
-Domain tests import domain functions directly. Storage tests supply an in-memory Storage implementation. UI and browser checks exercise the shared rules through actual controls rather than implementing a second evaluator in the interface. See `TESTING.md` for the current verification state.
+Detailed algorithms are in V2-ENGINE-DESIGN.md and V2-NPC-DESIGN.md.

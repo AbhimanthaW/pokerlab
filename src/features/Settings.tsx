@@ -32,6 +32,11 @@ export default function Settings({
       <div className="settings-grid">
         <section className="panel">
           <h2>Practice preferences</h2>
+          <p className="muted">
+            Play has separate session configuration and NPC pacing controls.
+            Motion and suit appearance preferences here apply throughout
+            PokerLab.
+          </p>
           <p className="muted">Opponent changes apply to the next hand.</p>
           <label className="setting-row">
             <span>

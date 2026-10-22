@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+const externalURL = process.env.PLAYWRIGHT_BASE_URL;
 const executablePath = process.env.POKERLAB_CHROMIUM_PATH;
 export default defineConfig({
   testDir: "./e2e",
@@ -13,7 +14,7 @@ export default defineConfig({
     ["json", { outputFile: "test-results/results.json" }],
   ],
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL: externalURL ?? "http://127.0.0.1:5173",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     launchOptions: executablePath ? { executablePath } : undefined,
@@ -27,10 +28,12 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: "http://127.0.0.1:5173",
-    reuseExistingServer: true,
-    timeout: 30_000,
-  },
+  webServer: externalURL
+    ? undefined
+    : {
+        command: "npm run dev",
+        url: "http://127.0.0.1:5173",
+        reuseExistingServer: true,
+        timeout: 30_000,
+      },
 });

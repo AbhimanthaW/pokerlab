@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PokerLab viewport QA</title>
+    <style>
+      body {
+        margin: 0;
+        background: #323a40;
+        font: 14px system-ui;
+        color: #eee;
+      }
+      header {
+        padding: 10px;
+      }
+      iframe {
+        display: block;
+        border: 0;
+        background: #10161c;
+        height: 900px;
+        max-width: none;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <header>Development QA · actual iframe viewport</header>
+    <script type="module">
+      import { scenario } from "./fixtures.ts";
+      const q = new URLSearchParams(location.search);
+      const width = Math.max(
+        320,
+        Math.min(1600, Number(q.get("width") ?? 390)),
+      );
+      const kind = q.get("case") ?? "live";
+      const key = "qa-" + kind + "-" + width;
+      if (!sessionStorage.getItem(key)) {
+        localStorage.setItem(
+          "pokerlab.play.v2",
+          JSON.stringify({
+            version: 2,
+            session: scenario(kind),
+            pacing: "instant",
+          }),
+        );
+        sessionStorage.setItem(key, "seeded");
+      }
+      const frame = document.createElement("iframe");
+      frame.title = "PokerLab responsive viewport";
+      frame.width = String(width);
+      frame.src = "/#play";
+      document.body.append(frame);
+    </script>
+  </body>
+</html>

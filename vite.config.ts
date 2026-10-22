@@ -9,5 +9,5 @@ export default defineConfig({
     include: ["src/**/*.test.{ts,tsx}"],
     restoreMocks: true,
   },
-  server: { port: 5173, strictPort: true },
+  server: { port: 5173, strictPort: true, allowedHosts: ["terminal.local"] },
 });

@@ -12,6 +12,7 @@ import {
   ChevronRight,
   FlaskConical,
   GraduationCap,
+  Gamepad2,
   Layers3,
   Settings2,
   ShieldCheck,
@@ -27,11 +28,13 @@ import {
   type AppData,
 } from "../lib/storage";
 import Practice from "../features/Practice";
+import Play from "../features/play/Play";
 import Trainer from "../features/Trainer";
 import Reference from "../features/Reference";
 import Progress from "../features/Progress";
 import Settings from "../features/Settings";
 const pages = [
+  { id: "play", label: "Play", icon: Gamepad2 },
   { id: "practice", label: "Practice Table", icon: Layers3 },
   { id: "trainer", label: "Hand Trainer", icon: GraduationCap },
   { id: "rankings", label: "Hand Rankings", icon: BookOpen },
@@ -56,8 +59,8 @@ class ErrorBoundary extends Component<
       <div className="fatal-error">
         <h1>Let’s get you back to the table.</h1>
         <p>
-          The app hit an unexpected state. Reload to start a fresh hand; saved
-          learning progress stays on this device.
+          The app hit an unexpected state. Reload PokerLab to restore your last
+          saved Play session. Saved learning progress stays on this device.
         </p>
         <button
           className="primary-button"
@@ -176,7 +179,7 @@ function PokerLab() {
           <span>
             Just you and the cards.<small>No accounts. No stakes.</small>
           </span>
-          <span className="version">V1.0</span>
+          <span className="version">V2.0</span>
         </div>
       </aside>
       <div className="main-shell">
@@ -204,6 +207,7 @@ function PokerLab() {
               </button>
             </div>
           )}
+          {page === "play" && <Play onLearn={() => navigate("practice")} />}
           <div hidden={page !== "practice"}>
             <Practice
               game={game}

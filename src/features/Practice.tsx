@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { uniqueId } from "../domain/id";
 import {
   ArrowRight,
   Check,
@@ -58,7 +59,7 @@ export default function Practice({
   onRecord,
   onReference,
 }: Props) {
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const [sessionId] = useState(() => uniqueId());
   const [answers, setAnswers] = useState<Record<string, EvaluationResult>>({});
   const [selected, setSelected] = useState<string[]>([]);
   const [mode, setMode] = useState<"recognition" | "best-five">("recognition");

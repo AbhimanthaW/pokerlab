@@ -1,50 +1,42 @@
-# PokerLab
+# PokerLab V2
 
-A local Texas Hold’em learning table built with React, strict TypeScript, Vite, Tailwind CSS, and Lucide icons. Practice recognizing hands, selecting the best five cards, and comparing showdown results without wagering.
+Local Texas Hold’em learning and single-player simulation, extending V1. No backend, accounts, external APIs, deployment, real currency, purchases, refill, rebuy, prizes or redeemable rewards.
 
-## Run locally
+## Launch
 
-Prerequisites: Node.js **22.12 or newer**, npm, and a modern browser with Web Crypto support. Installation requires access to the npm registry; the running app uses no external service.
+Node.js **22.12+**, npm, and a modern Web Crypto browser are required. From this directory:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open **http://127.0.0.1:5173**. Keep the terminal running; press Ctrl+C to stop it. No account, environment variables, backend, cloud database, or API keys are needed.
+Open **http://127.0.0.1:5173/** and choose **Play**. Keep the terminal running. Installation needs registry access; playing uses no external service.
 
-## What you can do
+Default Play: one human, three NPCs, 1,000 fictional chips each, fixed 5/10 blinds. Configure one to five opponents and three difficulties. NPC pace can be instant, normal, or relaxed. Amount fields are **final street totals**. Calls show chips added; All-in shows the resulting total. Only legal commands appear.
 
-- Deal a fresh hand against one to five hidden opponents. Reveal the flop, turn, river, and showdown at your own pace.
-- Identify your current hand and choose its best five cards on each community-card street. Any equivalent optimal five-card selection is accepted.
-- Predict the showdown winner or a tie before opponents’ cards are revealed. These predictions involve unknown information and do not measure strategic skill.
-- Train separately with hand recognition, best-five selection, and comparison problems at three difficulties.
-- Consult all nine hand rankings with illustrated examples and tie-breaking rules.
-- Review accuracy, exercise history, and frequently missed categories; configure opponents, motion, animation speed, and suit colors.
+Dealer and blinds rotate; full/short/cumulative raises, side pots, refunds, ties and odd chips are handled. Eliminations occur after settlement. Last survivor wins; early human elimination ends the user’s session without an unseen NPC tournament. Opponents use approximate personality heuristics, not solvers.
 
-Continuing from a street records its unfinished table exercises as **skipped**, never incorrect. Trainer questions left without submission are unfinished and are not recorded. There is no timer.
+The active Play hand and latest 100 completed records save automatically. Refresh restores the exact hand. Leaving Play pauses NPC presentation. Ending/discarding a live session requires confirmation. Saves are browser-local, unencrypted and readable through developer tools; clearing browser data removes them. Use one Play tab at a time.
 
-## Data and privacy
+## Learn
 
-Settings, lifetime counts, and the most recent 500 detailed results are saved in this browser’s localStorage. The Progress screen displays the latest 20 explanations. Reloading starts a fresh table while keeping saved learning progress. Clearing browser data removes that progress. Settings includes a progress reset that preserves preferences.
+V1 Practice Table, all three trainers, rankings, explanations, progress and settings remain. Active Learn hands reset on reload; completed progress persists. Learn uses pokerlab.v1; Play uses pokerlab.play.v2. No migration or overwrite of Learn data is required. Shared motion and suit preferences apply throughout the app.
 
-There are no wagers, chips, prizes, payments, multiplayer services, accounts, analytics services, or solver recommendations.
-
-## Development commands
+## Verify
 
 ```sh
 npm run typecheck
 npm run lint
 npm test
 npm run build
-npm run preview
+POKERLAB_EXHAUSTIVE=1 npm test -- src/domain/census.test.ts
+npx playwright install chromium
+npm run test:e2e
 ```
 
-The production files are emitted to `dist/`. Preview uses the URL printed by Vite. See [TESTING.md](TESTING.md) for Playwright and the optional exhaustive evaluator audit.
+Production output: dist/. Development qa/ fixtures are excluded from the production build and never determine ordinary game outcomes.
 
-## Project guide
+152 routine tests, TypeScript, lint, build, 5,000-hand stress audit and exhaustive 2,598,960-hand evaluator census passed. Historical live browser observations are retained in the QA report. Fresh macOS browser acceptance remains blocked before page execution: installed Chrome aborts at launch and installed headless Chromium is denied Mach-port bootstrap permission. The current suite collects 17 cases, but none is claimed as passing. This remains an outstanding acceptance requirement.
 
-- [ARCHITECTURE.md](ARCHITECTURE.md): modules, state, and persistence.
-- [GAME-RULES.md](GAME-RULES.md): dealing, rankings, and comparison rules.
-- [TESTING.md](TESTING.md): suites and verification commands.
-- [STATUS.md](STATUS.md): implemented behavior, verification, and limitations.
+See STATUS.md, TESTING.md, GAME-RULES.md, ARCHITECTURE.md and the four V2 design/specification/QA documents for details.
