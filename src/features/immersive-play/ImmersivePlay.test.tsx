@@ -86,3 +86,23 @@ it("pause cancels pending NPC work, resumes once and keeps the same session", as
   await act(async () => { vi.advanceTimersByTime(3000); }); expect(loadPlayData().session).toEqual(next);
   hook.unmount();
 });
+it("keeps duplicate cards behind details and cancels/commits a raise without losing the session", async () => {
+  const s = fixture(); savePlayData({ session: s, pacing: "relaxed" });
+  const user = userEvent.setup(); render(<App />);
+  await waitFor(() => expect(screen.getByTestId("mock-scene")).toBeInTheDocument());
+  expect(screen.getByRole("region", { name: "Community cards" })).not.toBeVisible();
+  expect(screen.queryByLabelText("Total commitment", { exact: true })).toBeNull();
+  await user.click(screen.getByText("Table details", { exact: true }));
+  expect(screen.getByRole("list", { name: "Opponent stacks" })).toHaveTextContent("Alex");
+  await user.click(screen.getByText("Table details", { exact: true }));
+  await user.click(screen.getByRole("button", { name: "Raise" }));
+  expect(screen.getByLabelText("Total commitment", { exact: true })).toHaveFocus();
+  await user.keyboard("{Escape}");
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(screen.getByRole("button", { name: "Raise" })).toHaveFocus();
+  expect(loadPlayData().session).toEqual(s);
+  await user.click(screen.getByRole("button", { name: "Raise" }));
+  await user.click(screen.getByRole("button", { name: /^Confirm raise/ }));
+  expect(loadPlayData().session?.revision).toBe(s.revision + 1);
+  expect(loadPlayData().session?.actions.at(-1)?.type).toBe("RAISE");
+});

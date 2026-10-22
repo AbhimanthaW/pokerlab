@@ -1,8 +1,9 @@
+import { PerspectiveCamera, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
 import { seededRandom } from "../../domain/cards";
 import { applyAction, createSession, getLegalActions, startHand } from "../../domain/play/engine";
 import { DEFAULT_CONFIG } from "../../domain/play/types";
-import { boundLook, DEFAULT_LOOK, projectScene, qualityConfig, seatAnchor, synchronizePresentation } from "./presentation";
+import { boundLook, CAMERA_RIG, DEFAULT_LOOK, projectScene, qualityConfig, seatAnchor, synchronizePresentation } from "./presentation";
 
 const game = () => { const s = createSession(DEFAULT_CONFIG, seededRandom(11), 0); s.dealer = 1; return startHand(s, seededRandom(2)); };
 describe("public presentation and synchronization", () => {
@@ -72,4 +73,15 @@ describe("seating, camera and quality boundaries", () => {
     expect(qualityConfig("low", 1440, 16)).toMatchObject({ dpr: 1, shadows: false, detail: false });
     expect(qualityConfig("high", 390, 4)).toMatchObject({ dpr: 1.8, shadows: true, detail: true });
   });
+});
+
+it.each([[1920, 1080], [1440, 900], [1280, 800]])("keeps all default opponent label anchors inside %ix%i with room for labels", (width, height) => {
+  const rig = CAMERA_RIG.desktop, camera = new PerspectiveCamera(rig.fov, width / height, .1, 40);
+  camera.position.set(0, rig.height, rig.distance); camera.lookAt(0, .05, CAMERA_RIG.lookAtZ); camera.updateMatrixWorld();
+  for (let n = 1; n <= 5; n++) for (let i = 1; i <= n; i++) {
+    const a = seatAnchor(i, n), screen = new Vector3(a[0] * .84, .78 + (i % 2) * .04, a[2] * .98).project(camera);
+    const x = (screen.x + 1) * width / 2, y = (1 - screen.y) * height / 2;
+    expect(x).toBeGreaterThan(60); expect(x).toBeLessThan(width - 60);
+    expect(y).toBeGreaterThan(75); expect(y).toBeLessThan(height - 100);
+  }
 });

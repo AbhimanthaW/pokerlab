@@ -26,6 +26,7 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
   onLearn: () => void; reducedMotion: boolean; fourColor: boolean;
 }) {
   const [menu, setMenu] = useState(false), [history, setHistory] = useState(false);
+  const [details, setDetails] = useState(false);
   const active = usePageActive();
   const controller = usePlay(menu || history || !active);
   const { session: s } = controller;
@@ -141,14 +142,19 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
             <div className="hud-pot"><span>{s.status === "hand_in_progress" ? "POT" : "AWARDED"}</span> {(s.status === "hand_in_progress" ? view.pot : last?.awards.reduce((n, a) => n + a.amount, 0) ?? 0).toLocaleString()}</div>
             {view.pots.length > 1 && <div className="hud-side-pots">{view.pots.map((p, i) => <span key={i}>{i ? `Side ${i}` : "Main"}: {p.amount}</span>)}</div>}
           </div>
-          <CommunityCards board={view.board} />
+          <div className="sr-only" aria-label="Revealed community cards">{view.board.length ? view.board.map((c) => `${c.rank} of ${c.suit}`).join(", ") : "No community cards dealt"}</div>
+          <details className="table-details" open={details} onToggle={(e) => setDetails(e.currentTarget.open)}><summary>Table details</summary>
+            <CommunityCards board={view.board} />
+            <PrivateCards cards={view.players[0].cards} folded={view.players[0].folded} />
+            <ul aria-label="Opponent stacks">{view.players.slice(1).map((p) => <li key={p.id}><strong>{p.name}</strong><span>{p.stack.toLocaleString()} chips · {p.eliminatedHand !== null ? "Eliminated" : p.folded ? "Folded" : p.stack === 0 ? "All-in" : p.lastAction || "Seated"}</span></li>)}</ul>
+          </details>
           <div className="human-stack">
             <div className="stack-value"><span>YOUR STACK {view.dealer === 0 ? "· D" : ""} {view.smallBlindSeat === 0 ? "· SB" : view.bigBlindSeat === 0 ? "· BB" : ""}</span><strong>{s.players[0].stack.toLocaleString()} <small>chips</small></strong></div>
-            <PrivateCards cards={view.players[0].cards} folded={view.players[0].folded} />
+            <span className="sr-only">Your hand: {view.players[0].cards.map((c) => `${c.rank} of ${c.suit}`).join(", ")}{view.players[0].folded ? ". Folded" : ""}</span>
           </div>
           <ul className="sr-only" aria-label="Public player stacks">{view.players.map((p) => <li key={p.id}>{p.name}: {p.stack} chips. {p.folded ? "Folded" : ""}</li>)}</ul>
           {!complete && s.status === "hand_in_progress" && s.actor === "you" && <div className="human-actions">
-            <ActionControls key={s.revision} legal={getLegalActions(s, "you")} onAction={(a) => { audio.current?.play("ui"); controller.act(a, s.revision); }} />
+            <ActionControls compact key={s.revision} legal={getLegalActions(s, "you")} onAction={(a) => { audio.current?.play("ui"); controller.act(a, s.revision); }} />
           </div>}
           {!complete && s.status === "hand_in_progress" && s.actor !== "you" && <div className="waiting-label">{names[s.actor!]} is thinking<span>•••</span></div>}
           {last && s.status === "hand_complete" && <section className="hand-result-overlay" aria-label="Hand result">

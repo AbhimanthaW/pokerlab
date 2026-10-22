@@ -33,3 +33,7 @@ Current result: the focused V3 desktop attempt failed at browser launch, before 
 Use V3-QA-REPORT.md's checklist. Inspect actual room/table/characters/cards/chips, seat/order markers, lighting, camera limits/reset, all six viewport sizes, no control overlap and card readability. Complete a session, review pots/history, refresh mid-hand, return to Learn and retry 2D/3D. Test real fullscreen entry/Escape and renderer context loss without losing the hand.
 
 Listen through the full music piece and loop; test every volume/mute, effects, inactive-tab behavior and repeated Play entry/exit. Measure FPS/frame time, draw calls, memory and repeated GPU/audio cleanup on real desktop/mobile hardware. No FPS target is claimed achieved yet. The Vite lazy-scene chunk size warning is documented rather than suppressed. Formal screen-reader, physical touch-device, Firefox and Safari checks remain pending.
+
+## V3.1 verification (22 October 2026)
+
+196 routine tests pass (one optional exhaustive census skipped), including seven new control/integration/projection tests. Strict TypeScript, lint and production build pass. All 25 domain files match the retained V3 baseline byte for byte. The existing 5,000-hand stress test remains included. Browser suite now collects 29 cases; the focused 1440×900 run could not open a browser (missing bundled executable; installed Chrome exited SIGABRT before page creation). No new browser screenshots, FPS, real fullscreen or audio listening pass is claimed. See the polish report for remaining acceptance steps.

@@ -26,11 +26,13 @@ function CameraDirector({ look, motion, cinematic, snapshot }: Pick<PokerScenePr
     const alpha = motion ? 1 - Math.exp(-Math.min(delta, .08) * 7) : 1;
     const y = rig.height;
     camera.position.lerp(target.set(0, y, z), alpha);
-    camera.fov = rig.fov;
+    if (camera.fov !== rig.fov) {
+      camera.fov = rig.fov;
+      camera.updateProjectionMatrix();
+    }
     const actor = snapshot?.seats.find((s) => s.id === snapshot.actor);
     const actorX = cinematic && motion && actor && actor.index > 0 ? seatAnchor(actor.index, snapshot!.seats.length - 1)[0] * .035 : 0;
     camera.lookAt(Math.sin(look.yaw) * 4 + actorX, .05 + look.pitch * 7 + emphasis, CAMERA_RIG.lookAtZ);
-    camera.updateProjectionMatrix();
   });
   return null;
 }
@@ -83,7 +85,7 @@ function TableContents({ snapshot, events, motion, fourColor }: Pick<PokerSceneP
         {seat.index > 0 && <>
           <NPCCharacter3D index={seat.index - 1} position={anchor} yaw={Math.atan2(-anchor[0], -anchor[2])}
             gesture={seat.gesture} motion={motion && !seat.eliminated} />
-          <Html center position={[anchor[0] * .9, .78 + (seat.index % 2) * .04, anchor[2] * .98]} zIndexRange={[26, 12]}>
+          <Html center position={[anchor[0] * .84, .78 + (seat.index % 2) * .04, anchor[2] * .98]} zIndexRange={[26, 12]}>
             <div className={`npc-label ${snapshot?.actor === seat.id ? "actor" : ""} ${seat.eliminated ? "out" : ""}`}>
               <strong>{seat.name} {seat.dealer ? "· D" : ""} {seat.blind ? `· ${seat.blind}` : ""}</strong>
               <span>{seat.eliminated ? "Eliminated" : `${seat.stack.toLocaleString()} chips`}</span>

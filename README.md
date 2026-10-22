@@ -38,3 +38,7 @@ Strict TypeScript, lint, 189 routine tests and production build pass. The unchan
 The scene is lazy-loaded in a roughly 940 kB minified chunk (~251 kB gzip); Vite emits a size warning. The original bundled instrumental is a 146-second WAV, fetched after audio enable. Regenerate it with python3 scripts/compose_lounge.py from this directory. Asset origins and licenses are documented in V3-ASSET-LICENSES.md.
 
 See ARCHITECTURE.md, GAME-RULES.md, TESTING.md and the V2/V3 specification, design and QA documents. Source packages exclude node_modules, build output, caches and generated test reports. No cloud deployment has been performed.
+
+## V3.1 polish
+
+Play now uses compact contextual actions; select Bet/Raise to edit and confirm a final total, or Cancel/Escape to return. Table details provides readable cards and opponent stacks without permanent duplicate overlays. Desktop camera framing is adjusted while preserving the seated room. Existing saves and Learn progress are retained. Automated checks pass; actual browser visual/audio acceptance is still pending. See [V3.1-POLISH-REPORT.md](V3.1-POLISH-REPORT.md).

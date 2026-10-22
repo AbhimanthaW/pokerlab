@@ -98,7 +98,7 @@ export function synchronizePresentation(
 export interface CameraLook { yaw: number; pitch: number; zoom: number }
 export const DEFAULT_LOOK: CameraLook = { yaw: 0, pitch: 0, zoom: 1 };
 export const CAMERA_RIG = {
-  desktop: { height: 1.6, distance: 4.85, fov: 53 },
+  desktop: { height: 1.75, distance: 5.65, fov: 53 },
   portrait: { height: 2, distance: 6.7, fov: 59 },
   lookAtZ: -.35, near: .1, far: 40,
 } as const;

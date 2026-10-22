@@ -27,10 +27,10 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1280, 800], [768, 102
     expect(box).not.toBeNull(); expect(box!.x).toBeGreaterThanOrEqual(0);
     expect(box!.y).toBeGreaterThanOrEqual(0); expect(box!.x + box!.width).toBeLessThanOrEqual(width);
     expect(box!.y + box!.height).toBeLessThanOrEqual(height);
-    const board = await page.getByRole("region", { name: "Community cards", exact: true }).boundingBox();
-    expect(board).not.toBeNull(); expect(board!.x).toBeGreaterThanOrEqual(0);
-    expect(board!.x + board!.width).toBeLessThanOrEqual(width);
-    expect(board!.y).toBeGreaterThanOrEqual(0); expect(board!.y + board!.height).toBeLessThanOrEqual(box!.y);
+    await expect(page.locator(".community-readout")).not.toBeVisible();
+    await page.getByText("Table details", { exact: true }).click();
+    await expect(page.getByRole("list", { name: "Opponent stacks" })).toBeVisible();
+    await page.getByText("Table details", { exact: true }).click();
     const stack = await page.locator(".human-stack").boundingBox();
     const overlap = stack && Math.min(stack.x + stack.width, box!.x + box!.width) > Math.max(stack.x, box!.x)
       && Math.min(stack.y + stack.height, box!.y + box!.height) > Math.max(stack.y, box!.y);
@@ -78,4 +78,16 @@ test("human elimination is distinct from a completed NPC tournament", async ({ p
   await expect(page.getByRole("region", { name: "Session outcome" })).toContainText("2 players remain");
   await expect(page.getByRole("button", { name: "New session", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Next hand", exact: true })).toHaveCount(0);
+});
+test("compact raise editor cancels without action and confirms a legal total", async ({ page }) => {
+  const s = live(); await seed(page, s);
+  await expect(page.getByLabel("Total commitment", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Raise", exact: true }).click();
+  await expect(page.getByLabel("Total commitment", { exact: true })).toBeFocused();
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("pokerlab.play.v2")!).session)).toEqual(s);
+  await page.getByRole("button", { name: "Raise", exact: true }).click();
+  await page.getByLabel("Total commitment", { exact: true }).fill("35");
+  await page.getByRole("button", { name: "Confirm raise to 35", exact: true }).click();
+  await expect.poll(async () => (await page.evaluate(() => JSON.parse(localStorage.getItem("pokerlab.play.v2")!).session)).actions.some((a: { playerId: string; type: string; total: number }) => a.playerId === "you" && a.type === "RAISE" && a.total === 35)).toBe(true);
 });

@@ -165,3 +165,45 @@
 }
 @media (prefers-reduced-motion: reduce) { .immersive-play *, .immersive-play *::before, .immersive-play *::after { animation: none !important; transition: none !important; } }
 .reduce-motion .immersive-play * { animation: none !important; transition: none !important; }
+
+/* V3.1: contextual controls leave the felt visible. */
+.human-actions { width: auto; max-width: min(620px, calc(100% - 230px)); }
+.immersive-play .human-actions .compact-controls { padding: 9px; }
+.immersive-play .compact-controls .play-controls-title { margin: 0 3px 7px; gap: 12px; }
+.immersive-play .compact-controls .action-buttons { display: flex; flex-wrap: wrap; }
+.immersive-play .compact-controls .action-buttons button { flex: 1; white-space: nowrap; min-width: 75px; }
+.immersive-play .compact-controls .amount-control { padding: 8px 3px; }
+.wager-confirm { display: flex; gap: 8px; margin-top: 7px; }
+.wager-confirm button { min-height: 42px; }
+.table-details { position: absolute; top: calc(85px + env(safe-area-inset-top)); right: 28px; z-index: 8; pointer-events: auto; background: #132327ed; border: 1px solid #a089565e; border-radius: 9px; max-width: calc(100% - 24px); max-height: calc(100dvh - 220px); overflow: auto; padding: 10px; }
+.table-details summary { cursor: pointer; font-size: 12px; color: #d7c49a; min-height: 24px; }
+.table-details .community-readout { position: static; transform: none; margin: 10px 0; background: transparent; padding: 5px 0; border: 0; }
+.table-details .private-readout { border: 0; padding: 5px 0; }
+.table-details ul { list-style: none; margin: 8px 0 0; padding: 0; }
+.table-details li { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid #71817755; padding: 8px 0; font-size: 11px; }
+.table-details li span { color: #d0c4a8; }
+.human-stack { padding: 8px 12px; }
+.hud-pot { margin-top: 7px; font-size: 27px; }
+@media (max-width: 1050px) {
+  .human-actions { left: auto; right: 16px; max-width: calc(100% - 205px); width: auto; }
+  .human-stack { left: 16px; bottom: calc(50px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 760px) {
+  .human-actions { left: 12px; right: 12px; width: auto; max-width: none; }
+  .human-stack { left: 12px; top: calc(135px + env(safe-area-inset-top)); bottom: auto; padding: 6px 9px; }
+  .stack-value > strong { font-size: 21px; }
+  .table-details { right: 12px; top: calc(135px + env(safe-area-inset-top)); }
+  .table-details[open] { top: calc(135px + env(safe-area-inset-top)); max-height: calc(100dvh - 340px); }
+  .immersive-play .compact-controls .action-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .immersive-play .compact-controls .action-buttons button { min-width: 0; min-height: 44px; }
+  .immersive-play .compact-controls .play-controls-title { flex-wrap: wrap; gap: 3px 10px; }
+  .hud-pot { margin: 0; }
+}
+@media (max-height: 500px) {
+  .human-actions { bottom: calc(34px + env(safe-area-inset-bottom)); }
+  .compact-controls.wager-open { max-height: calc(100dvh - 110px); overflow-y: auto; }
+  .table-details { max-height: calc(100dvh - 180px); }
+}
+@media (max-width: 760px) {
+  .has-side-pots .human-stack, .has-side-pots .table-details { top: calc(175px + env(safe-area-inset-top)); }
+}

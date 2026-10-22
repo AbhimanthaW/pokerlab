@@ -1,12 +1,23 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Action, LegalActions } from "../../domain/play/types";
 export default function ActionControls({
   legal,
   onAction,
+  compact = false,
 }: {
+  compact?: boolean;
   legal: LegalActions;
   onAction: (a: Action) => void;
 }) {
+  const [expanded, setExpanded] = useState(!compact);
+  const sending = useRef(false);
+  const wagerButton = useRef<HTMLButtonElement>(null);
+  const cancel = () => { setExpanded(false); wagerButton.current?.focus(); };
+  const submit = (action: Action) => {
+    if (sending.current) return;
+    sending.current = true;
+    try { onAction(action); } finally { queueMicrotask(() => { sending.current = false; }); }
+  };
   const [amount, setAmount] = useState(String(legal.minTo));
   const total = Number(amount);
   const valid =
@@ -15,9 +26,9 @@ export default function ActionControls({
     total >= legal.minTo &&
     total <= legal.maxTo;
   const command = (type: "FOLD" | "CHECK" | "CALL" | "ALL_IN") =>
-    onAction({ type, playerId: legal.playerId });
+    submit({ type, playerId: legal.playerId });
   return (
-    <section className="play-controls" aria-label="Your available actions">
+    <section className={`play-controls ${compact ? "compact-controls" : ""} ${expanded ? "wager-open" : ""}`} aria-label="Your available actions">
       <div className="play-controls-title">
         <strong>Your turn</strong>
         <span className="muted">
@@ -26,14 +37,15 @@ export default function ActionControls({
             : "No chips needed to check"}
         </span>
       </div>
-      {(legal.bet || legal.raise) && (
-        <div className="amount-control">
+      {(legal.bet || legal.raise) && expanded && (
+        <div className="amount-control" onKeyDown={(e) => { if (compact && e.key === "Escape") { e.stopPropagation(); cancel(); } }}>
           <label htmlFor="play-total">
             {legal.bet ? "Bet total" : "Raise to"}{" "}
             <span className="muted">· final total this round</span>
           </label>
           <div className="amount-fields">
             <input
+              autoFocus={compact}
               id="play-total"
               aria-label="Total commitment"
               type="number"
@@ -57,6 +69,7 @@ export default function ActionControls({
           <small className="muted">
             Minimum {legal.minTo} · maximum {legal.maxTo} virtual chips
           </small>
+          {compact && <div className="wager-confirm"><button className="primary-button" disabled={!valid} onClick={() => submit({ type: legal.bet ? "BET" : "RAISE", playerId: legal.playerId, to: total })}>Confirm {legal.bet ? "bet" : "raise"} to {valid ? total : "…"}</button><button className="secondary-button" onClick={cancel}>Cancel</button></div>}
           {!valid && (
             <span className="amount-error" role="status">
               Enter a whole number within the displayed range.
@@ -88,16 +101,18 @@ export default function ActionControls({
         {(legal.bet || legal.raise) && (
           <button
             className="primary-button"
-            disabled={!valid}
-            onClick={() =>
-              onAction({
+            disabled={!compact && !valid}
+            ref={wagerButton}
+            aria-expanded={compact ? expanded : undefined}
+            onClick={() => compact ? setExpanded((open) => !open) :
+              submit({
                 type: legal.bet ? "BET" : "RAISE",
                 playerId: legal.playerId,
                 to: total,
               })
             }
           >
-            {legal.bet ? "Bet" : "Raise to"} {valid ? total : "…"}
+            {compact ? (legal.bet ? "Bet" : "Raise") : `${legal.bet ? "Bet" : "Raise to"} ${valid ? total : "…"}`}
           </button>
         )}
         {legal.allIn && (
