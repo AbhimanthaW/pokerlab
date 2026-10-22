@@ -384,6 +384,9 @@ function finish(s: Session, reason: "folds" | "showdown", now: number) {
       ).length;
   }
   const record: HandRecord = {
+    replay: { version: 1, sessionId: s.id,
+      participants: s.players.map(({ id, name, personality }) => ({ id, name, personality })),
+      humanCards: [...s.players[0].cards] },
     number: s.handNumber,
     dealer: s.dealer,
     smallBlind: s.smallBlindSeat,

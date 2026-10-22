@@ -27,6 +27,7 @@ import {
   summarize,
   type AppData,
 } from "../lib/storage";
+import ProbabilityLab from "../features/probability-lab/ProbabilityLab";
 import Practice from "../features/Practice";
 import ImmersivePlay from "../features/immersive-play/ImmersivePlay";
 import Trainer from "../features/Trainer";
@@ -37,6 +38,7 @@ const pages = [
   { id: "play", label: "Play", icon: Gamepad2 },
   { id: "practice", label: "Practice Table", icon: Layers3 },
   { id: "trainer", label: "Hand Trainer", icon: GraduationCap },
+  { id: "probability", label: "Probability Lab", icon: FlaskConical },
   { id: "rankings", label: "Hand Rankings", icon: BookOpen },
   { id: "progress", label: "Progress", icon: ChartNoAxesCombined },
   { id: "settings", label: "Settings", icon: Settings2 },
@@ -179,7 +181,7 @@ function PokerLab() {
           <span>
             Just you and the cards.<small>No accounts. No stakes.</small>
           </span>
-          <span className="version">V3.0</span>
+          <span className="version">V4.0</span>
         </div>
       </aside>}
       <div className="main-shell">
@@ -224,6 +226,7 @@ function PokerLab() {
               onRecord={record}
             />
           )}
+          {page === "probability" && <ProbabilityLab />}
           {page === "rankings" && (
             <Reference onPractice={() => navigate("practice")} />
           )}

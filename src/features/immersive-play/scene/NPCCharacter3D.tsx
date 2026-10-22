@@ -1,6 +1,8 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import type { Group } from "three";
+import { MathUtils, type Mesh, type Group } from "three";
+import { characterPose } from "../../living-npcs/behavior";
+import type { Personality } from "../../../domain/play/types";
 import type { Gesture, Point } from "../presentation";
 
 const appearances = [
@@ -18,21 +20,27 @@ function Limb({ start, end, color, radius = .095 }: { start: Point; end: Point; 
     <cylinderGeometry args={[radius * .85, radius, length, 7]} /><meshStandardMaterial color={color} flatShading />
   </mesh>;
 }
-export default function NPCCharacter3D({ index, position, yaw, gesture, motion, dealer = false }: {
+export default function NPCCharacter3D({ index, position, yaw, gesture, motion, dealer = false, personality = "analytical", variation = .5 }: {
+  personality?: Personality; variation?: number;
   index: number; position: Point; yaw: number; gesture: Gesture; motion: boolean; dealer?: boolean;
 }) {
   const body = useRef<Group>(null), head = useRef<Group>(null), hands = useRef<Group>(null);
+  const brow = useRef<Group>(null), mouth = useRef<Mesh>(null);
+  const timing = useRef({ gesture, time: 0 });
   const p = appearances[index % appearances.length];
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (!body.current || !head.current || !hands.current) return;
-    const t = clock.elapsedTime, phase = index * 1.73;
-    const active = ["THINKING", "ACTING", "CALLING", "RAISING", "ALL_IN", "CHECKING"].includes(gesture);
-    const amplitude = motion ? 1 : 0;
-    body.current.rotation.x = (gesture === "ELIMINATED" ? .16 : active ? .07 : .015) + Math.sin(t * .9 + phase) * .012 * amplitude;
-    head.current.rotation.y = Math.sin(t * .38 + phase) * .055 * amplitude;
-    head.current.rotation.x = (gesture === "THINKING" || gesture === "FOLDING" ? .15 : 0) + Math.sin(t * .6 + phase) * .02 * amplitude;
-    hands.current.position.z = active ? Math.sin(t * (gesture === "CHECKING" ? 5 : 1.8) + phase) * .065 * amplitude : 0;
-    hands.current.position.y = gesture === "ALL_IN" ? .065 : gesture === "SHOWDOWN" ? .025 : 0;
+    if (timing.current.gesture !== gesture) timing.current = { gesture, time: 0 };
+    timing.current.time += Math.min(delta, .08);
+    const pose = characterPose(personality, gesture, timing.current.time, variation, motion);
+    const a = motion ? 1 - Math.exp(-Math.min(delta, .08) * 8) : 1;
+    body.current.rotation.x = MathUtils.lerp(body.current.rotation.x, pose.body, a);
+    head.current.rotation.x = MathUtils.lerp(head.current.rotation.x, pose.headX, a);
+    head.current.rotation.y = MathUtils.lerp(head.current.rotation.y, pose.headY, a);
+    hands.current.position.z = MathUtils.lerp(hands.current.position.z, pose.handZ, a);
+    hands.current.position.y = MathUtils.lerp(hands.current.position.y, pose.handY, a);
+    if (brow.current) brow.current.position.y = MathUtils.lerp(brow.current.position.y, pose.brow, a);
+    if (mouth.current) mouth.current.scale.y = MathUtils.lerp(mouth.current.scale.y, pose.mouth, a);
   });
   return <group position={position} rotation={[0, yaw, 0]}>
     <mesh position={[0, -.47, -.14]} castShadow><boxGeometry args={[.68, .16, .62]} /><meshStandardMaterial color="#49342d" /></mesh>
@@ -56,10 +64,11 @@ export default function NPCCharacter3D({ index, position, yaw, gesture, motion, 
           <mesh position={[side * .25, -.01, 0]}><sphereGeometry args={[.06, 6, 5]} /><meshStandardMaterial color={p.skin} /></mesh>
           <mesh position={[side * .091, .025, .215]}><sphereGeometry args={[.038, 6, 5]} /><meshStandardMaterial color="#e8decb" /></mesh>
           <mesh position={[side * .091, .023, .247]}><sphereGeometry args={[.018, 6, 5]} /><meshStandardMaterial color="#282421" /></mesh>
-          <mesh position={[side * .09, .094, .217]} rotation={[0, 0, side * -.08]}><boxGeometry args={[.095, .018, .018]} /><meshStandardMaterial color={p.hair} /></mesh>
+
         </group>)}
+        <group ref={brow}>{[-1, 1].map((side) => <mesh key={side} position={[side * .09, .094, .217]} rotation={[0, 0, side * -.08]}><boxGeometry args={[.095, .018, .018]} /><meshStandardMaterial color={p.hair} /></mesh>)}</group>
         <mesh position={[0, -.025, .252]} rotation={[Math.PI / 2, 0, 0]}><coneGeometry args={[.055, .14, 5]} /><meshStandardMaterial color={p.skin} flatShading /></mesh>
-        <mesh position={[0, -.14, .205]}><boxGeometry args={[.11, .017, .012]} /><meshStandardMaterial color="#754837" /></mesh>
+        <mesh ref={mouth} position={[0, -.14, .205]}><boxGeometry args={[.11, .017, .012]} /><meshStandardMaterial color="#754837" /></mesh>
         {index === 2 && <mesh position={[0, -.16, .13]} scale={[1, .65, .9]}><sphereGeometry args={[.2, 8, 5]} /><meshStandardMaterial color={p.hair} flatShading /></mesh>}
         {index === 3 && [-.09, .09].map((x) => <mesh key={x} position={[x, .027, .26]}><torusGeometry args={[.06, .012, 4, 12]} /><meshStandardMaterial color="#b19a6a" metalness={.6} /></mesh>)}
         {index === 4 && <mesh position={[0, .21, -.01]}><cylinderGeometry args={[.28, .29, .12, 10]} /><meshStandardMaterial color="#4d4841" /></mesh>}

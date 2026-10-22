@@ -1,11 +1,13 @@
+import { publicVariation } from "../living-npcs/behavior";
 import { getPlayView } from "../../domain/play/engine";
 import type { Card } from "../../domain/types";
-import type { Session, SessionStatus, Street } from "../../domain/play/types";
+import type { Session, SessionStatus, Street, Personality } from "../../domain/play/types";
 
 export type Point = [number, number, number];
-export type Gesture = "IDLE" | "THINKING" | "ACTING" | "FOLDING" | "CHECKING" |
+export type Gesture = "IDLE" | "OBSERVING" | "WAITING_FOR_SHOWDOWN" | "THINKING" | "ACTING" | "FOLDING" | "CHECKING" |
   "CALLING" | "RAISING" | "ALL_IN" | "SHOWDOWN" | "HAND_COMPLETE" | "ELIMINATED";
 export interface SceneSeat {
+  personality?: Personality; variation?: number;
   id: string; name: string; index: number; stack: number; committed: number;
   cards: (Card | null)[]; folded: boolean; eliminated: boolean; gesture: Gesture;
   dealer: boolean; blind: "SB" | "BB" | null; lastAction: string;
@@ -32,13 +34,13 @@ export function projectScene(s: Session): SceneSnapshot {
     seats: v.players.map((p, index) => {
       const action = v.actions.filter((a) => a.playerId === p.id).at(-1);
       return {
-        id: p.id, name: p.name, index, stack: p.stack, committed: p.streetChips,
+        id: p.id, name: p.name, index, personality: p.personality, variation: publicVariation(`${s.id}:${s.handNumber}:${p.id}`), stack: p.stack, committed: p.streetChips,
         cards: s.initialStacks[index] > 0 ? [p.cards[0] ?? null, p.cards[1] ?? null] : [],
         folded: p.folded, eliminated: p.eliminatedHand !== null,
         gesture: p.eliminatedHand !== null ? "ELIMINATED" :
           result ? (p.cards.length ? "SHOWDOWN" : "HAND_COMPLETE") :
-          p.folded ? "FOLDING" : p.stack === 0 ? "ALL_IN" :
-          s.actor === p.id ? "THINKING" : gestures[action?.type ?? ""] ?? "IDLE",
+          p.folded ? "FOLDING" : p.stack === 0 ? (action?.sequence === v.actions.at(-1)?.sequence && action?.type === "ALL_IN" ? "ALL_IN" : "WAITING_FOR_SHOWDOWN") :
+          s.actor === p.id ? "THINKING" : action?.sequence === v.actions.at(-1)?.sequence ? gestures[action?.type ?? ""] ?? "OBSERVING" : "OBSERVING",
         dealer: index === s.dealer,
         blind: index === s.smallBlindSeat ? "SB" : index === s.bigBlindSeat ? "BB" : null,
         lastAction: p.lastAction,

@@ -2434,3 +2434,9 @@ select {
     font-size: 20px;
   }
 }
+/* Seven Learn/Play destinations remain readable within narrow bottom navigation. */
+@media (max-width: 760px) {
+  .sidebar nav { overflow-x: auto; justify-content: flex-start; }
+  .sidebar .nav-link { flex: 1 0 49px; min-width: 49px; }
+  .sidebar .nav-link > span { white-space: normal; text-align: center; line-height: 1.2; }
+}

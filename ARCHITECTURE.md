@@ -34,8 +34,18 @@ Detailed algorithms are in V2-ENGINE-DESIGN.md and V2-NPC-DESIGN.md.
 
 ## V3 immersive presentation
 
-features/immersive-play/ contains the viewport shell, preferences, modal, lifecycle/fullscreen hooks, public presentation adapter/event queue, lazy scene components and audio manager. The App conditionally removes its sidebar/topbar for Play and retains the mounted Learn practice state. The existing Play component gained a ControlledPlay renderer so fallback shares the shell's single usePlay controller. The controller gained only a pause input; the complete domain directory is unchanged.
+features/immersive-play/ contains the viewport shell, preferences, modal, lifecycle/fullscreen hooks, public presentation adapter/event queue, lazy scene components and audio manager. The App conditionally removes its sidebar/topbar for Play and retains the mounted Learn practice state. The existing Play component gained a ControlledPlay renderer so fallback shares the shell's single usePlay controller. V3 added a pause input without changing the domain directory. V4 adds the small, explicit history/memory integrations described below.
 
 Scene modules are PokerRoom/PokerTable3D, PokerScene/CameraDirector, NPCCharacter3D, Card3D and ChipStack3D. No scene component receives hidden state or an engine dispatcher. Camera and quality calculations live in presentation.ts. Presentation effects are cancellable, bounded and subordinate to snapshots. Audio has one owner with explicit activation, independent levels, page-visibility handling and teardown. V3 preferences are isolated from existing schemas.
 
 The rendering architecture, coordinate conventions and lifecycle details are in V3-RENDERING-ARCHITECTURE.md. The original music generator and all visual assets are local. Browser/GPU acceptance is still pending; see V3-QA-REPORT.md.
+
+## V4 boundaries
+
+The only original domain-file changes are optional version-1 completed-hand replay metadata in `play/types.ts`/`engine.ts` and the bounded memory score adjustment in `policy.ts`. Rules, card/evaluator algorithms, legal-action scheduling, settlement amounts and NPC observation allowlists remain unchanged. `play/publicMemory.ts` derives bounded detached public summaries. The controller persists them and rebuilds from authoritative history on restoration, independently of the visual personality system.
+
+`domain/replay/timeline.ts` reuses existing action/history records and derives an absolute presentation snapshot for any event position, without a live session or rules call. `ReplayViewer` shares `PokerScene`; its independent timing controller pauses the live controller and cannot dispatch game commands. History metadata is allowlisted and version-validated. Live visual effects establish a silent baseline on replay return.
+
+`domain/probability-lab/engine.ts` owns pure scenario/count/enumeration/simulation math, using canonical cards and the existing evaluator. The Learn editor owns its independent scenario. A dedicated worker runs all final-hand distributions, with typed request identities, throttled progress, cancellation/termination and stale-response rejection. It has no import of Play/replay/session state. Small exact next-draw ratios remain immediate.
+
+V4 adds no runtime dependencies or services. The existing Play and educational storage schemas remain; V4 preferences/public memory use separate version-1 keys. See the V4 design documents for algorithms, tests and limits.

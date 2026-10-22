@@ -1,0 +1,24 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { expect, it, vi } from "vitest";
+import ProbabilityLab from "./ProbabilityLab";
+vi.mock("./useCalculation", () => ({ useCalculation: () => ({ busy: false, progress: 0, reset: vi.fn(), run: vi.fn(), cancel: vi.fn() }) }));
+it("constructs valid custom scenarios with live conditional explanations and individual clearing", async () => {
+  const user = userEvent.setup(); render(<ProbabilityLab />);
+  await user.click(screen.getByRole("button", { name: "Select Ah" }));
+  await user.click(screen.getByRole("button", { name: "Select Kh" }));
+  expect(screen.getByRole("button", { name: "Select Ah" })).toBeDisabled();
+  await user.selectOptions(screen.getByLabelText("Card destination"), "board");
+  for (const c of ["Qh", "Jh", "2c"]) await user.click(screen.getByRole("button", { name: `Select ${c}` }));
+  expect(screen.getByText("47 unseen cards")).toBeVisible();
+  expect(screen.getByText("9 / 47")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Calculate exact distribution" })).toBeEnabled();
+  await user.selectOptions(screen.getByLabelText("Card destination"), "unavailable");
+  await user.click(screen.getByRole("button", { name: "Select Th" }));
+  expect(screen.getByText("8 / 46")).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "Remove Th from unavailable" }));
+  expect(screen.getByText("9 / 47")).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "Reset scenario" }));
+  expect(screen.getByText("52 unseen cards")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Calculate exact distribution" })).toBeDisabled();
+});

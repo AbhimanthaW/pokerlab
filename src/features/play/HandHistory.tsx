@@ -29,7 +29,9 @@ export function ActionLog({
 export default function HandHistory({
   history,
   names,
+  onReplay,
 }: {
+  onReplay?: (hand: HandRecord) => void;
   history: HandRecord[];
   names: Record<string, string>;
 }) {
@@ -50,6 +52,7 @@ export default function HandHistory({
               {h.reason === "folds" ? "Won by folds" : "Showdown"} ·{" "}
               {h.awards.reduce((n, a) => n + a.amount, 0)} awarded
             </summary>
+            {onReplay && <button className="secondary-button" onClick={() => onReplay(h)}>Replay hand {h.number}</button>}
             <p className="muted">
               Dealer: {Object.values(names)[h.dealer]} · Small blind:{" "}
               {Object.values(names)[h.smallBlind]} · Big blind:{" "}

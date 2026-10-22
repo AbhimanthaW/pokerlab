@@ -71,7 +71,7 @@ function TableContents({ snapshot, events, motion, fourColor }: Pick<PokerSceneP
   const seats = snapshot?.seats ?? Array.from({ length: 4 }, (_, i) => ({
     id: i ? `preview-${i}` : "you", index: i, name: ["You", "Alex", "Morgan", "Sam"][i],
     stack: 1000, committed: 0, cards: [], folded: false, eliminated: false,
-    gesture: "IDLE" as const, dealer: false, blind: null, lastAction: "",
+    personality: "analytical" as const, variation: .5, gesture: "IDLE" as const, dealer: false, blind: null, lastAction: "",
   }));
   return <group scale={[mobile ? .57 : 1, 1, 1]}>
     <PokerTable3D segments={mobile ? 12 : 24} />
@@ -84,7 +84,7 @@ function TableContents({ snapshot, events, motion, fourColor }: Pick<PokerSceneP
       return <group key={seat.id}>
         {seat.index > 0 && <>
           <NPCCharacter3D index={seat.index - 1} position={anchor} yaw={Math.atan2(-anchor[0], -anchor[2])}
-            gesture={seat.gesture} motion={motion && !seat.eliminated} />
+            gesture={seat.gesture} personality={seat.personality} variation={seat.variation} motion={motion && !seat.eliminated} />
           <Html center position={[anchor[0] * .84, .78 + (seat.index % 2) * .04, anchor[2] * .98]} zIndexRange={[26, 12]}>
             <div className={`npc-label ${snapshot?.actor === seat.id ? "actor" : ""} ${seat.eliminated ? "out" : ""}`}>
               <strong>{seat.name} {seat.dealer ? "· D" : ""} {seat.blind ? `· ${seat.blind}` : ""}</strong>

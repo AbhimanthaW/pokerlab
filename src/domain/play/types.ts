@@ -76,7 +76,14 @@ export interface PotAward extends PotLayer {
   payouts: Record<string, number>;
   explanation: string;
 }
+export interface ReplayMetadata {
+  version: 1; sessionId: string;
+  participants: { id: string; name: string; personality: Personality }[];
+  /** The human already saw these cards; never contains other hidden hands. */
+  humanCards: Card[];
+}
 export interface HandRecord {
+  replay?: ReplayMetadata;
   number: number;
   dealer: number;
   smallBlind: number;

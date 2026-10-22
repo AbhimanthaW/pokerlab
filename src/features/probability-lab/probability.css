@@ -1,0 +1,28 @@
+.probability-lab { max-width: 1160px; margin: auto; }
+.probability-lab h1 { font: 38px Georgia,serif; margin: 8px 0 12px; }
+.probability-lab h2 { font: 24px Georgia,serif; margin-bottom: 12px; }
+.probability-lab h3 { font-size: 13px; margin: 10px 0; }
+.probability-lab p { font-size: 13px; line-height: 1.7; margin: 9px 0; }
+.probability-lab .panel { padding: 22px; margin: 22px 0; }
+.lab-section-title { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: start; }
+.lab-known { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 14px; margin: 16px 0; }
+.lab-selected { display: flex; gap: 7px; flex-wrap: wrap; min-height: 70px; align-items: center; }
+.lab-card-button { background: none; border: 1px solid transparent; border-radius: 7px; padding: 3px; position: relative; cursor: pointer; }
+.lab-card-button > span:last-child:not(.playing-card) { position: absolute; top: -3px; right: 0; background: #233744; color: #fff; border-radius: 20px; padding: 0 5px; }
+.lab-card-button:disabled { opacity: .18; cursor: default; }
+.lab-card-button:focus-visible { outline: 3px solid #e0be70; outline-offset: 2px; }
+.lab-deck { display: grid; grid-template-columns: repeat(13,minmax(0,1fr)); gap: 3px; margin: 15px 0; }
+.lab-deck .playing-card.small { width: 45px; height: 64px; min-width: 0; }
+.lab-deck .card-corner { top: 4px; left: 4px; }.lab-deck .card-corner b { font-size: 14px; }.lab-deck .card-corner span { font-size: 12px; }.lab-deck .card-corner.bottom { display: none; }.lab-deck .card-pip { font-size: 27px; }
+.lab-label, .lab-question-controls label { display: flex; gap: 10px; align-items: center; font-size: 12px; flex-wrap: wrap; }
+.probability-lab select, .probability-lab input { min-height: 40px; border: 1px solid #627068; border-radius: 6px; background: #1d3037; color: #eee1c2; padding: 7px; max-width: 100%; }
+.probability-lab input { width: 150px; }
+.lab-question-controls { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0; }
+.lab-ratios { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 17px; }
+.lab-ratios article { padding: 13px; background: #17292d; border-radius: 9px; }
+.lab-ratios strong { display: block; color: #dfbf7b; font: 25px Georgia,serif; margin-bottom: 6px; }.lab-ratios span { font-size: 12px; }
+.lab-runs { flex-wrap: wrap; margin: 15px 0; }.lab-runs button { min-height: 44px; }
+.probability-lab progress { display: block; width: 100%; accent-color: #d5ba7e; margin: 12px 0; }
+.lab-results { overflow: auto; margin: 18px 0; }.lab-results table { width: 100%; border-collapse: collapse; font-size: 12px; }.lab-results caption { text-align: left; padding: 10px 0; color: #c8b88f; }.lab-results td,.lab-results th { padding: 10px; text-align: left; border-bottom: 1px solid #60726355; white-space: nowrap; }.lab-bar { display: block; height: 4px; background: #cfaf6d; margin-top: 5px; border-radius: 3px; }
+@media(max-width:1100px) { .lab-deck { grid-template-columns: repeat(7,minmax(0,1fr)); }.lab-known { grid-template-columns: 1fr 1fr; }.lab-ratios { grid-template-columns: 1fr; } }
+@media(max-width:520px) { .lab-deck { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 2px; }.lab-known { grid-template-columns: 1fr; }.probability-lab .panel { padding: 14px; }.lab-deck .playing-card.small { width: 39px; height: 57px; }.probability-lab h1 { font-size: 31px; } }

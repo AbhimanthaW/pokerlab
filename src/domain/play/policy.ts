@@ -1,3 +1,4 @@
+import { memoryAdjustment, type PublicMemory } from "./publicMemory";
 import { evaluate } from "../evaluation";
 import type { RandomSource } from "../types";
 import type { NpcObservation } from "./observation";
@@ -106,6 +107,7 @@ export function safeNpcAction(o: NpcObservation, candidate: unknown): Action {
 export function chooseNpcAction(
   o: NpcObservation,
   random?: RandomSource,
+  memory?: PublicMemory,
 ): Action {
   const profile = {
     cautious: { aggression: 0.28, loose: -0.1, noise: 0.08 },
@@ -122,7 +124,7 @@ export function chooseNpcAction(
         ? 0.08
         : 0);
   let score = clamp(
-    strength(o) + profile.loose + (randomValue(random) - 0.5) * noise * 2,
+    strength(o) + profile.loose + (o.difficulty === "beginner" ? 0 : memoryAdjustment(memory, o.playerId, o.participants.filter((p) => p.inHand && !p.folded).map((p) => p.id))) + (randomValue(random) - 0.5) * noise * 2,
   );
   const cost = l.call / Math.max(1, o.pot + l.call);
   if (o.difficulty === "challenge") {

@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useMemo, useReducer } from "react";
 import {
   applyAction,
   createSession,
@@ -19,6 +19,9 @@ import {
   savePlayData,
   type PlayData,
 } from "../../lib/playStorage";
+
+import { publicMemory } from "../../domain/play/publicMemory";
+import { savePublicMemory } from "../../lib/v4Storage";
 
 type Command =
   | {
@@ -88,6 +91,9 @@ export function usePlay(paused = false) {
     dispatch({ type: "STORAGE", message: warning });
   }, [session, pacing, invalid]);
   const s = state.session;
+  // Reconstruct from authoritative public history on restore; a stale sidecar cannot influence play.
+  const memory = useMemo(() => s ? publicMemory(s.id, s.handNumber, s.history, s.status === "hand_in_progress" ? s.actions : []) : null, [s]);
+  useEffect(() => { if (!invalid) { const warning = savePublicMemory(memory); if (warning) dispatch({ type: "STORAGE", message: warning }); } }, [memory, invalid]);
   useEffect(() => {
     if (
       !s ||
@@ -103,7 +109,7 @@ export function usePlay(paused = false) {
     const timer = window.setTimeout(
       () => {
         try {
-          let action = chooseNpcAction(observation);
+          let action = chooseNpcAction(observation, undefined, memory ?? undefined);
           if (validateAction(s, action))
             action = safeNpcAction(observation, null);
           dispatch({
@@ -126,7 +132,7 @@ export function usePlay(paused = false) {
       state.pacing === "instant" ? 0 : state.pacing === "relaxed" ? 1300 : 550,
     );
     return () => window.clearTimeout(timer);
-  }, [s, state.pacing, state.error, paused]);
+  }, [s, state.pacing, state.error, paused, memory]);
   return {
     ...state,
     start: (config: SessionConfig) => {

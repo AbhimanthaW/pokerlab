@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Settings2, Volume2, VolumeX, Maximize2, RotateCcw, BookOpen, SkipForward, History } from "lucide-react";
 import { getLegalActions, getPlayView } from "../../domain/play/engine";
-import { DEFAULT_CONFIG, type SessionConfig } from "../../domain/play/types";
+import { DEFAULT_CONFIG, type HandRecord, type SessionConfig } from "../../domain/play/types";
 import { ControlledPlay } from "../play/Play";
 import { usePlay } from "../play/usePlay";
 import ActionControls from "../play/ActionControls";
@@ -11,6 +11,10 @@ import { AudioManager } from "./audio/AudioManager";
 import { boundLook, DEFAULT_LOOK, projectScene, type Quality } from "./presentation";
 import { loadImmersivePreferences, saveImmersivePreferences, type ImmersivePreferences } from "./preferences";
 import { toggleFullscreen, useFullscreen, usePageActive, usePresentation, useReducedMotion } from "./hooks";
+import { buildReplay, type ReplayRecord } from "../../domain/replay/timeline";
+import ReplayViewer from "../replay/ReplayViewer";
+import Dialogue from "../living-npcs/Dialogue";
+import { loadV4Settings, saveV4Settings, type V4Settings } from "../../lib/v4Storage";
 import Modal from "./Modal";
 import { CommunityCards, PrivateCards } from "./VisibleCards";
 import "./immersive.css";
@@ -27,8 +31,11 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
 }) {
   const [menu, setMenu] = useState(false), [history, setHistory] = useState(false);
   const [details, setDetails] = useState(false);
+  const [resumedRevision, setResumedRevision] = useState<number | null>(null);
+  const [replay, setReplay] = useState<ReplayRecord | null>(null);
+  const [v4, setV4] = useState(loadV4Settings);
   const active = usePageActive();
-  const controller = usePlay(menu || history || !active);
+  const controller = usePlay(menu || history || !!replay || !active);
   const { session: s } = controller;
   const [preferences, setPreferences] = useState(loadImmersivePreferences);
   const [config, setConfig] = useState<SessionConfig>({ ...DEFAULT_CONFIG });
@@ -62,7 +69,7 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
     if (warning) setNotice(warning);
     audio.current?.update(preferences);
   }, [preferences]);
-  useEffect(() => { audio.current?.setInactive(!active || menu || history); }, [active, menu, history]);
+  useEffect(() => { audio.current?.setInactive(!active || menu || history || !!replay); }, [active, menu, history, replay]);
   useEffect(() => {
     for (const e of presentation.events) {
       if (played.current.has(e.id)) continue;
@@ -74,11 +81,11 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
   }, [presentation.events]);
   useEffect(() => {
     const escape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !document.fullscreenElement && !history) setMenu((value) => !value);
+      if (e.key === "Escape" && !replay && !document.fullscreenElement && !history) setMenu((value) => !value);
     };
     window.addEventListener("keydown", escape);
     return () => window.removeEventListener("keydown", escape);
-  }, [history]);
+  }, [history, replay]);
   const change = (patch: Partial<ImmersivePreferences>) => setPreferences((p) => ({ ...p, ...patch }));
   const sound = async () => {
     if (!audioEnabled || preferences.muted) {
@@ -96,11 +103,19 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
   const complete = s?.status === "player_eliminated" || s?.status === "session_complete";
   const last = s?.history.at(-1);
   const modal = menu || history;
+  const changeV4 = (patch: Partial<V4Settings>) => {
+    const next = { ...v4, ...patch }; setV4(next); const warning = saveV4Settings(next); if (warning) setNotice(warning);
+  };
+  const openReplay = (hand: HandRecord) => {
+    try { const record = buildReplay(hand, names); setReplay(record); setHistory(false); setMenu(false); }
+    catch (e) { setNotice(e instanceof Error ? e.message : "This hand cannot be replayed."); }
+  };
+  if (replay) return <ReplayViewer record={replay} preferences={preferences} motion={motion} fourColor={fourColor} active={active} speed={v4.replaySpeed} onSpeed={(replaySpeed) => changeV4({ replaySpeed })} onExit={() => { setResumedRevision(s?.revision ?? null); setReplay(null); }} onLearn={learn} />;
   return <div className={`immersive-play ${display2d ? "display-2d" : "display-3d"} ${view && view.pots.length > 1 ? "has-side-pots" : ""}`} ref={root} data-testid="immersive-play">
     <div className="immersive-backdrop" aria-hidden="true" inert={modal}>
       {!display2d && <SceneBoundary onFailure={failed}>
         <Suspense fallback={<div className="scene-loading" role="status">Opening the room…</div>}>
-          <PokerScene snapshot={snapshot} events={skipMotion ? [] : presentation.events} quality={preferences.quality}
+          <PokerScene snapshot={snapshot} events={skipMotion || s?.revision === resumedRevision ? [] : presentation.events} quality={preferences.quality}
             motion={motion} cinematic={preferences.cinematic} active={active && !modal} look={look} fourColor={fourColor} onFailure={failed} />
         </Suspense>
       </SceneBoundary>}
@@ -136,6 +151,7 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
           onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}
           onWheel={(e) => setLook((p) => boundLook({ ...p, zoom: p.zoom + e.deltaY * .0003 }))} />
         {s && view && <>
+          {v4.dialogue && snapshot && <Dialogue key={`${s.id}:${s.handNumber}:${s.status}`} active={active && !modal} context={{ hand: s.handNumber, status: s.status, activePlayers: snapshot.seats.filter((p) => !p.eliminated).length, name: snapshot.seats.find((p) => p.index > 0 && !p.eliminated)?.name ?? "Dealer", personality: snapshot.seats.find((p) => p.index > 0 && !p.eliminated)?.personality ?? "analytical" }} />}
           <div className="table-state" role="status" aria-live="polite" aria-atomic="true">
             <span className="hand-tag">{String(s.handNumber).padStart(3, "0")} / {s.street}</span>
             <strong>{s.status === "hand_in_progress" ? `${names[s.actor!]} to act` : complete ? "Session ended" : "Hand complete"}</strong>
@@ -161,7 +177,7 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
             <span className="eyebrow">{last.reason === "folds" ? "WON BY FOLDS" : "SHOWDOWN"}</span>
             {last.awards.map((a, i) => <p key={i}>{explainAward(a.explanation, names)}</p>)}
             {Object.entries(last.refunds).map(([id, n]) => <small key={id}>{names[id]}: {n} uncalled chips returned.</small>)}
-            <button className="primary-button" onClick={() => { setSkipMotion(false); controller.next(); }}>Next hand →</button>
+            <div className="toolbar"><button className="primary-button" onClick={() => { setSkipMotion(false); controller.next(); }}>Next hand →</button><button className="secondary-button" onClick={() => openReplay(last)}>Replay last hand</button></div>
           </section>}
           {complete && <section className="session-result-overlay" aria-label="Session outcome">
             <p className="eyebrow">LAST PLAYER STANDING</p>
@@ -169,7 +185,7 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
             <p>{s.handNumber} hands · {Math.max(0, Math.round(((s.finishedAt ?? s.startedAt) - s.startedAt) / 60000))} minutes</p>
             <p>{s.status === "player_eliminated" ? `${s.players.filter((p) => p.stack > 0).length} players remain. Your session ends here.` : `All ${s.supply.toLocaleString()} virtual chips are accounted for.`}</p>
             <ol>{[...s.players].sort((a, b) => (a.place ?? 0) - (b.place ?? 0) || b.stack - a.stack).map((p) => <li key={p.id}>{p.place ? `#${p.place}` : "Still in"} {p.name}<span>{p.stack} chips</span></li>)}</ol>
-            <div className="toolbar"><button className="primary-button" onClick={controller.discard}>New session</button><button className="secondary-button" onClick={learn}>Return to Learn</button></div>
+            <button className="secondary-button" disabled={!last} onClick={() => last && openReplay(last)}>Replay last hand</button><div className="toolbar"><button className="primary-button" onClick={controller.discard}>New session</button><button className="secondary-button" onClick={learn}>Return to Learn</button></div>
           </section>}
         </>}
         {!s && <section className="room-entry" aria-label="New Play session">
@@ -191,6 +207,7 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
       <label className="menu-row">Display<select aria-label="Table display" value={display2d ? "2d" : "3d"} onChange={(e) => { setRendererError(undefined); change({ display: e.target.value as "2d" | "3d" }); }}><option value="3d">3D room</option><option value="2d">2D table</option></select></label>
       <label className="menu-row">Graphics quality<select aria-label="Graphics quality" value={preferences.quality} onChange={(e) => change({ quality: e.target.value as Quality })}>{["auto", "low", "medium", "high"].map((q) => <option key={q}>{q}</option>)}</select></label>
       <label className="menu-row">NPC pace<select aria-label="NPC pace" value={controller.pacing} onChange={(e) => controller.setPacing(e.target.value as "instant" | "normal" | "relaxed")}>{["instant", "normal", "relaxed"].map((p) => <option key={p}>{p}</option>)}</select></label>
+      <label className="menu-row">Character dialogue<input aria-label="Character dialogue" type="checkbox" checked={v4.dialogue} onChange={(e) => changeV4({ dialogue: e.target.checked })} /></label>
       <label className="menu-row">Camera emphasis<input type="checkbox" checked={preferences.cinematic} onChange={(e) => change({ cinematic: e.target.checked })} /></label>
       <div className="camera-menu" aria-label="Camera adjustment"><button className="hud-button" aria-label="Look left" onClick={() => setLook((v) => boundLook({ ...v, yaw: v.yaw - .04 }))}>←</button><button className="hud-button" aria-label="Look right" onClick={() => setLook((v) => boundLook({ ...v, yaw: v.yaw + .04 }))}>→</button><button className="hud-button" aria-label="Look up" onClick={() => setLook((v) => boundLook({ ...v, pitch: v.pitch + .03 }))}>↑</button><button className="hud-button" aria-label="Look down" onClick={() => setLook((v) => boundLook({ ...v, pitch: v.pitch - .03 }))}>↓</button><button className="hud-button" aria-label="Zoom in" onClick={() => setLook((v) => boundLook({ ...v, zoom: v.zoom - .025 }))}>+</button><button className="hud-button" aria-label="Zoom out" onClick={() => setLook((v) => boundLook({ ...v, zoom: v.zoom + .025 }))}>−</button></div>
       <div className="audio-title"><h3>Room audio</h3><button className="hud-button" onClick={() => void sound()}>{!audioEnabled || preferences.muted ? "Enable audio" : "Mute audio"}</button></div>
@@ -198,6 +215,6 @@ export default function ImmersivePlay({ onLearn, reducedMotion, fourColor }: {
       <p className="menu-caption">Drag the room to look around. Scroll to zoom. Escape opens this menu. Motion follows your accessibility preferences.</p>
       <button className="secondary-button" onClick={learn}><BookOpen size={16} /> Return to Learn</button>
     </Modal>}
-    {history && <Modal title="Hand history" onClose={() => setHistory(false)}>{view ? <><details><summary>Current hand actions</summary><ActionLog actions={view.actions} names={names} /></details><HandHistory history={view.history} names={names} /></> : <p>Your completed hands will appear here.</p>}</Modal>}
+    {history && <Modal title="Hand history" onClose={() => setHistory(false)}>{view ? <><details><summary>Current hand actions</summary><ActionLog actions={view.actions} names={names} /></details><HandHistory history={view.history} names={names} onReplay={openReplay} /></> : <p>Your completed hands will appear here.</p>}</Modal>}
   </div>;
 }
