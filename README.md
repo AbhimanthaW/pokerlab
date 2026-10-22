@@ -1,6 +1,6 @@
-# PokerLab V4 — The Living Table
+# PokerLab V5 — The Night Room Expansion
 
-An offline educational Hold’em application with Learn, single-player Hold’em, an immersive 3D room, living NPCs, read-only hand replay and Probability Lab. **V4 browser/visual acceptance remains pending; automated implementation checks pass.** No deployment, backend, accounts, real currency, purchases, refill, prizes or redeemable rewards.
+An offline educational Hold’em application with Learn, single-player Hold’em, an immersive 3D room, living NPCs, read-only hand replay, Probability Lab and a customizable animated cardroom. **V5 browser/visual acceptance remains pending; automated implementation checks pass.** No deployment, backend, accounts, real currency, purchases, refill, prizes or redeemable rewards.
 
 ## Launch
 
@@ -33,9 +33,9 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Strict TypeScript, lint, 227 routine tests and production build pass. All 196 V1–V3.1 tests remain, including the original 5,000-hand stress suite; V4 adds a 600-hand memory/replay stress suite. There are 36 committed browser cases, but the fresh installed-Chrome attempt exits SIGABRT before page execution. No fresh visual review, FPS result or full browser acceptance is claimed. See V4-QA-REPORT.md for evidence and remaining checks.
+Strict TypeScript, lint, 260 routine tests and production build pass. All 227 V1–V4 baseline tests remain, including the 5,000-hand core and 600-hand memory/replay stress suites. The 42 committed browser cases include six V5 viewport/preset scenarios. A fresh installed-Chrome attempt exits SIGABRT before page creation; no browser visual/FPS pass is claimed. See V5-QA-REPORT.md.
 
-The scene is lazy-loaded in a roughly 940 kB minified chunk (~251 kB gzip); Vite emits a size warning. The original bundled instrumental is a 146-second WAV, fetched after audio enable. Regenerate it with python3 scripts/compose_lounge.py from this directory. Asset origins and licenses are documented in V3-ASSET-LICENSES.md.
+The scene is lazy-loaded in a roughly 955 kB minified chunk (~251 kB gzip); Vite emits a size warning. The original bundled instrumental is a 146-second WAV, fetched after audio enable. Regenerate it with python3 scripts/compose_lounge.py from this directory. Asset origins and licenses are documented in V3-ASSET-LICENSES.md.
 
 See ARCHITECTURE.md, GAME-RULES.md, TESTING.md and the V2/V3 specification, design and QA documents. Source packages exclude node_modules, build output, caches and generated test reports. No cloud deployment has been performed.
 
@@ -52,3 +52,13 @@ Play now uses compact contextual actions; select Bet/Raise to edit and confirm a
 New hands retain optional replay metadata inside the compatible schema-2 save; separate `pokerlab.v4.settings` and `pokerlab.v4.public-memory` version-1 keys hold small preferences/public summaries. No migration discards old progress or active sessions.
 
 Run `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`; then optionally `node scripts/verify-probability-worker.mjs`. Run `npm run test:e2e` on a browser-capable host. See [V4-QA-REPORT.md](V4-QA-REPORT.md), [V4-REPLAY-ARCHITECTURE.md](V4-REPLAY-ARCHITECTURE.md), [V4-NPC-SYSTEM.md](V4-NPC-SYSTEM.md) and [V4-PROBABILITY-LAB.md](V4-PROBABILITY-LAB.md).
+
+## V5: The Night Room Expansion
+
+Pause/settings → Cardroom customization lets you preview/apply/cancel three room palettes, felt/rail/card-back/chip styles, player sleeve/skin materials, hand visibility and Standard/Cinematic/Instant camera modes. Restore room defaults affects only V5 cosmetics. The original audio, graphics, progress and active game remain intact.
+
+The player's first-person hands, dealer's articulated arms, private dealing, burns, shuffle packets, pot gestures and card collection share public presentation events. Inspect your own cards with the eye control or unmodified **I** shortcut; **Escape** cancels inspection. The human's cards converge immediately if a decision needs attention. No gesture selects cards, processes bets or advances the engine. NPC gaze/blinks and varied dialogue use public events only. Rainy Midnight adds a small background rain window.
+
+Existing audio gains/mute/unlock remain; Character audio adds a separate small level for synthetic non-speech acknowledgements. Effects have stable identities, stereo positioning and bounded cleanup. New validated settings use `pokerlab.room.v5`, version 1. All 32 domain files match V4; replay and Probability Lab are retained.
+
+Read [V5-ANIMATION-SYSTEM.md](V5-ANIMATION-SYSTEM.md), [V5-ART-DIRECTION.md](V5-ART-DIRECTION.md), [V5-ASSET-LICENSES.md](V5-ASSET-LICENSES.md) and [V5-QA-REPORT.md](V5-QA-REPORT.md). Actual in-room visual/audio/device acceptance remains open because browser startup is blocked. No FPS target is claimed achieved.

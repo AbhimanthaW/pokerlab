@@ -59,3 +59,26 @@ it("keeps the same texture across immutable copies of the same card", () => {
   h.rerender({ card: { ...card }, folded: true, fourColor: false });
   expect(h.result.current).not.toBe(original); expect(dispose).toHaveBeenCalledTimes(1);
 });
+it("delays coordinated flights, cancels on reduced motion and never restarts after interruption",()=>{
+ const clock=vi.spyOn(performance,"now").mockReturnValue(1000);
+ const placement={current:new Group()},face={current:new Group()};
+ const flight={at:1000,delay:.5,duration:.25,from:[.65,.18,-1.65] as Point};
+ const h=renderHook((options)=>useCardMotion(placement,face,options),{initialProps:{faceKey:"Ac",position,folded:false,deal:true,motion:true,flight}});
+ act(()=>loop.frame?.({},1/60));expect(placement.current.visible).toBe(false);
+ clock.mockReturnValue(1600);act(()=>loop.frame?.({},1/60));expect(placement.current.visible).toBe(true);expect(placement.current.position.z).toBeLessThan(position[2]);
+ h.rerender({faceKey:"Ac",position,folded:false,deal:true,motion:false,flight});act(()=>loop.frame?.({},1/60));expect(placement.current.position.toArray()).toEqual(position);
+ h.rerender({faceKey:"Ac",position,folded:false,deal:true,motion:true,flight});act(()=>loop.frame?.({},1/60));expect(placement.current.position.toArray()).toEqual(position);clock.mockRestore();
+});
+it("gives a newly active human immediate readable cards instead of waiting for dealer animation",()=>{
+ const clock=vi.spyOn(performance,"now").mockReturnValue(1000),placement={current:new Group()},face={current:new Group()};
+ const flight={at:1000,delay:1,duration:.25,from:[.65,.18,-1.65] as Point};
+ const options={faceKey:"Ac",position,folded:false,deal:true,motion:true,flight,priority:false};
+ const h=renderHook((props)=>useCardMotion(placement,face,props),{initialProps:options});act(()=>loop.frame?.({},1/60));expect(placement.current.visible).toBe(false);
+ h.rerender({...options,priority:true});act(()=>loop.frame?.({},1/60));expect(placement.current.visible).toBe(true);expect(placement.current.position.toArray()).toEqual(position);expect(face.current.rotation.y).toBe(0);clock.mockRestore();
+});
+it("smoothly tilts an inspected card and snaps to the stable pose under reduced motion",()=>{
+ const placement={current:new Group()},face={current:new Group()},surface={current:new Group()};
+ const initial={faceKey:"Ac",position,folded:false,deal:false,motion:true,surface,tilt:.48,angle:0};const h=renderHook((options)=>useCardMotion(placement,face,options),{initialProps:initial});
+ const old=surface.current.rotation.x;h.rerender({...initial,tilt:.95});act(()=>loop.frame?.({},1/60));expect(surface.current.rotation.x).toBeGreaterThan(old);expect(surface.current.rotation.x).toBeLessThan(-Math.PI/2+.95);
+ h.rerender({...initial,tilt:.95,motion:false});act(()=>loop.frame?.({},1/60));expect(surface.current.rotation.x).toBe(-Math.PI/2+.95);
+});

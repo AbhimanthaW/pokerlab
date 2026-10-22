@@ -181,7 +181,7 @@ function PokerLab() {
           <span>
             Just you and the cards.<small>No accounts. No stakes.</small>
           </span>
-          <span className="version">V4.0</span>
+          <span className="version">V5.0</span>
         </div>
       </aside>}
       <div className="main-shell">

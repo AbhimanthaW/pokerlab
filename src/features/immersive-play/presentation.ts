@@ -64,7 +64,7 @@ export const POT_ANCHOR: Point = [0, .08, -.95];
 export const DECK_ANCHOR: Point = [0.65, 0.18, -1.65];
 export type VisualEvent = {
   id: string; kind: "DEAL" | "ACTION" | "BOARD" | "AWARD" | "SHOWDOWN" | "COMPLETE";
-  at: number; playerId?: string; action?: string; amount?: number;
+  at: number; fromBoard?: number; boardCount?: number; playerId?: string; action?: string; amount?: number;
 };
 export interface PresentationState { snapshot: SceneSnapshot | null; events: VisualEvent[] }
 export function synchronizePresentation(
@@ -85,7 +85,7 @@ export function synchronizePresentation(
     if (["SMALL_BLIND", "BIG_BLIND", "REFUND"].includes(a.type)) continue;
     event("ACTION", `action-${a.sequence}`, { playerId: a.playerId, action: a.type, amount: a.added });
   }
-  if (next.board.length > (next.hand === prev.hand ? prev.board.length : 0)) event("BOARD", "board");
+  if (next.board.length > (next.hand === prev.hand ? prev.board.length : 0)) event("BOARD", "board", { fromBoard: next.hand === prev.hand ? prev.board.length : 0, boardCount: next.board.length });
   if (next.status !== "hand_in_progress" && (prev.status === "hand_in_progress" || next.hand !== prev.hand)) {
     if (next.board.length === 5) event("SHOWDOWN", "showdown");
     for (const [i, award] of next.awards.entries())

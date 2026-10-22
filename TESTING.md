@@ -1,4 +1,4 @@
-# Testing PokerLab V4
+# Testing PokerLab V5
 
 Node.js 22.12+ and npm ci are required. Run from this directory:
 
@@ -13,7 +13,7 @@ npm test -- src/domain/play/stress.test.ts --reporter=verbose --silent=false
 
 ## Automated results
 
-227 routine tests pass, retaining all 196 V1–V3.1 tests. Strict TypeScript includes src, E2E and QA fixtures; lint and production build pass. Original rules/card/evaluator/observation modules are preserved; V4 adds completed-hand metadata, public-memory policy integration and new isolated modules. The ordinary suite includes the original 5,000-hand invariant stress test and the additional 600-hand V4 suite. The exhaustive five-card census remains optional; the earlier V2 run passed all 2,598,960 hands. A skipped test does not imply a fresh exhaustive pass.
+260 routine tests pass, retaining all 227 V1–V4 tests. Strict TypeScript includes src, E2E and QA fixtures; lint and production build pass. Original rules/card/evaluator/observation modules are preserved; V4 adds completed-hand metadata, public-memory policy integration and new isolated modules. The ordinary suite includes the original 5,000-hand invariant stress test and the additional 600-hand V4 suite. The exhaustive five-card census remains optional; the earlier V2 run passed all 2,598,960 hands. A skipped test does not imply a fresh exhaustive pass.
 
 V3 presentation.test.ts covers public visibility, legitimate showdown cards, silent restoration, stale/duplicate events, cancellation, bounded rapid queues, exact snapshot convergence, seat anchors, camera limits and quality choices. preferences.test.ts covers schema isolation, recovery and explicit fullscreen/rejection. AudioManager.test.ts covers activation, singleton playback resources, independent levels, inactive behavior, cleanup, async unmount, autoplay rejection and WAV validity/duration. ImmersivePlay.test.tsx covers sidebar removal/Learn return, shared-controller display switching, renderer fallback, settings/focus/Escape, StrictMode cleanup and NPC pause/resume. Its scene is mocked; it is not a WebGL or screenshot test. cardMotion.test.ts uses real Three.js Groups with a controlled frame hook to verify reveal/placement lifecycles and stable texture identity across cloned states. VisibleCards.test.tsx verifies flop/turn/river isolation and stable displayed-card nodes.
 
@@ -24,11 +24,11 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-36 collected cases: six V1 regressions, eleven retained V2 flows in the 2D renderer, twelve V3/V3.1 cases and seven V4 cases. V3 covers actual canvas/labels/control bounds at 1920x1080, 1440x900, 1280x800, 768x1024, 390x844 and 320x640; switching/Learn/refresh; context loss; fullscreen rejection; final victory and early human elimination. Browser fixtures are test-only and do not choose ordinary game outcomes. POKERLAB_CHROMIUM_PATH selects a compatible installed browser; PLAYWRIGHT_BASE_URL reuses an existing server. The default config starts Vite on localhost:5173.
+42 collected cases: six V1 regressions, eleven V2 flows, twelve V3/V3.1 cases, seven V4 cases and six V5 cases. V3 covers actual canvas/labels/control bounds at 1920x1080, 1440x900, 1280x800, 768x1024, 390x844 and 320x640; switching/Learn/refresh; context loss; fullscreen rejection; final victory and early human elimination. Browser fixtures are test-only and do not choose ordinary game outcomes. POKERLAB_CHROMIUM_PATH selects a compatible installed browser; PLAYWRIGHT_BASE_URL reuses an existing server. The default config starts Vite on localhost:5173.
 
 Historical V3 result: the focused V3 desktop attempt failed at browser launch, before page assertions, with bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer: Permission denied (1100), followed by SIGTRAP. No passing browser result or rendered screenshot is claimed. No browser restrictions were bypassed. Rerun in a normal environment that allows Chromium subprocesses.
 
-Current V4 attempt: installed Chrome exits SIGABRT before page creation, with kill EPERM during cleanup. See the V4 verification section below.
+Historical V4 attempt: installed Chrome exits SIGABRT before page creation, with kill EPERM during cleanup. See the V4 verification section below.
 
 ## Manual visual/audio/performance gate
 
@@ -47,3 +47,9 @@ Listen through the full music piece and loop; test every volume/mute, effects, i
 New coverage spans replay accounting/privacy/legacy/corrupt metadata/direct seeking, playback timing/cleanup, real live-controller isolation and restoration, probability counts and evaluation fixtures, seeded estimates/intervals/limits, worker ownership/cancellation/stale messages, UI card selection and NPC memory/profile behavior. `node scripts/verify-probability-worker.mjs` runs the production bundle in a real Node worker host; it is separate from browser Web Worker acceptance.
 
 36 Playwright cases are collected, including seven V4 desktop/tablet/mobile scenarios. The focused V4 real-worker browser test is blocked by installed Chrome exiting SIGABRT before page creation; cleanup reports kill EPERM. It is not an application assertion failure and supplies no browser PASS or screenshot. Actual touch/graphics/audio/fullscreen/worker behavior on browser devices remains pending. See V4-QA-REPORT.md for commands and precise limits.
+
+## V5 verification (22 October 2026)
+
+260 routine tests pass (one optional exhaustive census skipped), including 33 additions for coordinator/player/dealer stages, partial-board runouts, reduced motion, human priority, replay speed, camera/gaze bounds, instant audio, geometry/resource lifetime, preferences, preview/apply/cancel/restore, card inspection, stable flights/tilts and audio scheduling/panning/cleanup. Original tests are retained. Strict TypeScript, lint and production build pass. All 32 domain files match the V4 ZIP byte for byte. Both retained stress suites pass unchanged.
+
+The focused V5 1440×900 Playwright attempt is blocked by installed Chrome exiting SIGABRT before a page/context; cleanup reports kill EPERM. The full 42-case browser suite is collected, not passed. No actual room capture, physical touch/fullscreen check, audio listening or GPU/FPS result is claimed. A software projection of the actual 272-triangle hand geometry was inspected; this is model-only evidence. Reproduce the SVG study with `node --experimental-strip-types scripts/render-hand-study.mjs` on the specified Node 22 runtime. See V5-QA-REPORT.md for limits and commands.

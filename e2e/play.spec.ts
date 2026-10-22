@@ -165,13 +165,28 @@ test("full board settlement, next hand and restored active state", async ({ page
 test("integer raise validation, hidden information and persisted exact turn", async ({
   page,
 }) => {
-  await seed(page, live());
+  const session = live();
+  await seed(page, session);
   await expect(
     page.getByTestId("play-opponent").getByRole("img", { name: "Hidden card" }),
   ).toHaveCount(6);
   const raise = page.getByLabel("Total commitment", { exact: true });
   await raise.fill("-1");
   await expect(page.getByRole("button", { name: /^Raise to/ })).toBeDisabled();
+  await raise.fill("20.5");
+  await expect(page.getByRole("button", { name: /^Raise to/ })).toBeDisabled();
+
+  // Invalid edits must leave the exact human decision intact across restoration.
+  await page.reload();
+  await expect(
+    page.getByRole("region", { name: "Your available actions" }),
+  ).toBeVisible();
+  expect(await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("pokerlab.play.v2")!).session,
+  )).toEqual(session);
+  await expect(
+    page.getByTestId("play-opponent").getByRole("img", { name: "Hidden card" }),
+  ).toHaveCount(6);
   await raise.fill("20");
   await page.getByRole("button", { name: "Raise to 20", exact: true }).click();
   await expect(
@@ -179,8 +194,12 @@ test("integer raise validation, hidden information and persisted exact turn", as
       .getByRole("region", { name: "Your available actions" })
       .or(page.getByRole("region", { name: "Hand result", exact: true })),
   ).toBeVisible();
-  await page.getByRole("button", { name: /Action history/ }).click();
-  await expect(page.locator(".current-action-history")).toContainText(
+  const history = page.locator(".current-action-history");
+  // The retained 2D table uses a native summary disclosure, not a button.
+  await history.locator("summary", { hasText: /^Action history/ }).click();
+  await expect(history).toHaveAttribute("open", "");
+  await expect(history.locator(".play-action-log")).toBeVisible();
+  await expect(history).toContainText(
     "raise 20 (to 20)",
   );
 });

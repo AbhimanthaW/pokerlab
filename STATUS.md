@@ -1,26 +1,30 @@
-# PokerLab V4 status — The Living Table
+# PokerLab V5 — The Night Room Expansion
 
-**All three V4 pillars are implemented. Automated acceptance passes; actual browser/visual acceptance remains pending. Do not treat this as a verified production visual release.** No deployment, backend, accounts, financial integration or V4.1 work.
+**Six-pillar implementation is present and automated checks pass. Browser/visual acceptance is still pending; production visual completion and FPS targets are not claimed.** No deployment or infrastructure.
 
-| Area | State |
+Implemented:
+
+- Optional first-person hands/forearms with original shared geometry, action gestures, sleeve/skin choices and temporary own-card inspection.
+- Existing dealer with articulated hands/arms, shuffle/deal/burn/runout/showdown/award/collection choreography.
+- Public-only NPC gaze, pupil/blink variation, restrained public-result expressions, rotating milestone dialogue and retained V4 personalities/memory/policy.
+- Three room palettes, four felts, three finishes/card backs/chip styles, preview/apply/cancel/defaults and version-1 cosmetic persistence.
+- Standard/Cinematic/Instant camera modes with human-turn priority and reduced-motion behavior.
+- Rain-window atmosphere, expanded local effects, room ambience, stereo panning and independent character-audio level.
+
+| Verification | Result |
 | --- | --- |
-| V1 Learn and V2 Hold'em | Preserved; original regression suite and 5,000-hand invariants pass |
-| V3.1 immersive room and controls | Retained, including legal compact Raise workflow, renderer fallback and local saves |
-| Living NPCs | Personality movement, facial cues, public-only bounded memory, small legal policy extension and optional milestone text |
-| Cinematic replay | Last-hand/history entries, existing 3D scene reuse, read-only timeline, controls, speed, direct seeking and legacy fallback |
-| Probability Lab | Separate card editor, exact drawing ratios/distributions, seeded worker simulation, comparison/intervals and cancellation |
-| Strict TypeScript, lint, build | Passed |
-| Routine tests | 227 passed, one optional exhaustive census skipped; 196 V1–V3.1 baseline tests retained |
-| Core stress | 5,000 hands, 26,313 transitions, 710 sessions, 1,535 eliminations, 360 winners |
-| V4 memory/replay stress | 600 hands, 78 sessions, 7,029 transitions, 12,914 replay snapshots, seed 7412 |
-| Production probability worker | Executed in a Node worker host: exact 1,081 outcomes, 2,000 seeded samples and cancellation pass |
-| Browser suite | 36 cases collected; focused V4 execution blocked before page creation |
-| Actual rendered captures, audio listening, fullscreen, GPU/FPS/memory measurements | Pending; no pass claimed |
+| Baseline | 227 tests passed; original optional exhaustive census skipped |
+| V5 routine suite | 260 passed, one optional exhaustive census skipped; all 227 baseline tests retained |
+| TypeScript/lint/build | Passed; existing lazy-scene size warning remains |
+| Domain compatibility | All 32 domain files byte-identical to V4, including rules, NPC policy, replay reconstruction and probability algorithms |
+| Original stress | 5,000 hands / 26,313 transitions / 710 sessions / 1,535 eliminations / 360 winners |
+| V4 memory/replay stress | 600 hands / 7,029 transitions / 78 sessions / 12,914 replay snapshots |
+| Production probability worker | Exact, simulation and cancellation bundle checks pass in Node worker host |
+| Browser collection | 42 scenarios; six V5 viewport/preset scenarios added |
+| Fresh browser attempt | Installed Chrome exited SIGABRT before page creation; cleanup reported kill EPERM |
+| Model-only study | Actual polygon hand geometry software-projected and inspected; thumb connectivity corrected |
+| Actual room captures, lighting/collision review, touch/fullscreen/audio listening/GPU profiling | Pending; no pass claimed |
 
-Fresh browser attempt: installed Google Chrome launched under Playwright then exited SIGABRT before a page/context opened; cleanup reported kill EPERM. Existing browser-dependent V3/V3.1 acceptance is carried forward. Tests with mocked scenes do not establish real 3D quality or layout.
+All original save keys/schemas remain. `pokerlab.room.v5` adds validated optional version-1 cosmetics; corrupt/missing data resets only those cosmetics. No new dependency, financial feature, reward/purchase system, game variant or online service.
 
-Saves: `pokerlab.v1`, `pokerlab.play.v2` schema 2 and `pokerlab.immersive.v3` schema 1 remain compatible. New completed hands add optional version-1 replay metadata; old/corrupt optional metadata falls back honestly. V4 settings/public memory use separate version-1 keys. Replay/history are bounded to 100 hands; memory to 12 hands and bounded action lists. No active deck is copied into probability or replay state.
-
-Known limits: legacy hands may lack earlier human cards; replay uses ordered records and nominal playback timing; characters remain lightweight procedural models; memory-aware NPCs remain heuristic; exact enumeration caps at 25,000 completions and simulation at 100,000 trials; saved single-tab data remains local/inspectable/unencrypted. Existing ~941 kB lazy-scene warning and 6.44 MB local music asset remain. Browser visual acceptance is the next verification priority, followed by measured device profiling and targeted V4.1 refinements.
-
-See V4-QA-REPORT.md and the three V4 design documents for evidence and implementation boundaries. Historical V2/V3/V3.1 reports remain available.
+Known limits: procedural rather than full skeletal rigs, representative chip meshes, no physical finger simulation, synthetic non-speech acknowledgements, existing large PCM music asset, local single-tab inspectable saves and unresolved browser visual gate. Performance aims remain 60 FPS capable desktop, 45–60 FPS mid-range laptop and at least 30 FPS supported mobile; these were not measured. See V5-QA-REPORT.md and the V5 animation/art/license documents.

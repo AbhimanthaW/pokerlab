@@ -6,16 +6,16 @@ export const PRESENTATION_PROFILES = {
   casual: { movement: 1.15, tempo: .7, lean: -.025, gaze: .095 },
   analytical: { movement: .65, tempo: .95, lean: .055, gaze: .025 },
 } as const;
-export type Expression = "neutral" | "focused" | "pleased" | "disappointed" | "surprised" | "relaxed";
+export type Expression = "neutral" | "focused" | "pleased" | "disappointed" | "surprised" | "relaxed" | "amused" | "celebratory";
 export function publicVariation(identity: string): number { let n = 2166136261; for (const c of identity) n = Math.imul(n ^ c.charCodeAt(0), 16777619); return (n >>> 0) / 4294967296; }
 /** Deterministic public presentation only. No card-strength or policy inputs. */
-export function characterPose(personality: Personality, gesture: Gesture, elapsed: number, variation: number, motion: boolean) {
+export function characterPose(personality: Personality, gesture: Gesture, elapsed: number, variation: number, motion: boolean, publicOutcome: "none" | "win" = "none") {
   const p = PRESENTATION_PROFILES[personality], phase = variation * Math.PI * 2;
   const t = Math.max(0, elapsed) * p.tempo, moving = motion ? p.movement : 0;
   const action = ["CHECKING", "CALLING", "RAISING", "ALL_IN", "ACTING"].includes(gesture);
   const envelope = action && motion ? Math.sin(Math.min(1, t / .95) * Math.PI) : 0;
   const focused = ["THINKING", "OBSERVING", "WAITING_FOR_SHOWDOWN"].includes(gesture);
-  const expression: Expression = gesture === "ELIMINATED" || gesture === "FOLDING" ? "disappointed" : gesture === "ALL_IN" ? "surprised" : gesture === "HAND_COMPLETE" ? "pleased" : focused ? "focused" : personality === "casual" ? "relaxed" : "neutral";
+  const expression: Expression = publicOutcome === "win" ? "celebratory" : personality === "casual" && gesture === "HAND_COMPLETE" ? "amused" : gesture === "ELIMINATED" || gesture === "FOLDING" ? "disappointed" : gesture === "ALL_IN" ? "surprised" : gesture === "HAND_COMPLETE" ? "pleased" : focused ? "focused" : personality === "casual" ? "relaxed" : "neutral";
   return {
     body: (gesture === "ELIMINATED" ? .15 : focused || action ? p.lean : .012) + Math.sin(t * .9 + phase) * .012 * moving,
     headX: (gesture === "THINKING" || gesture === "FOLDING" ? .12 : 0) + Math.sin(t * .6 + phase) * .018 * moving,
@@ -23,7 +23,7 @@ export function characterPose(personality: Personality, gesture: Gesture, elapse
     handZ: envelope * (gesture === "RAISING" || gesture === "ALL_IN" ? .12 : .065) * p.movement,
     handY: gesture === "WAITING_FOR_SHOWDOWN" ? .025 : gesture === "SHOWDOWN" ? .04 : envelope * (gesture === "ALL_IN" ? .08 : .025),
     brow: expression === "surprised" ? .024 : expression === "focused" ? -.009 : expression === "disappointed" ? .009 : 0,
-    mouth: expression === "surprised" ? 1.8 : expression === "pleased" ? .6 : .95,
+    mouth: expression === "surprised" ? 1.8 : ["pleased","amused","celebratory"].includes(expression) ? .6 : .95,
     expression,
   };
 }
@@ -35,4 +35,12 @@ export function contextualLine(context: DialogueContext): string {
   if (context.activePlayers === 2) return "Just two seats now. Same game, different rhythm.";
   if (context.hand === 1) return "Good to have everyone at the table.";
   return { cautious: "One hand at a time.", aggressive: "New hand. Fresh start.", casual: "All right, another round.", analytical: "Positions have moved. Let's begin." }[context.personality];
+}
+
+/** Deterministic variation avoids consecutive repeated hand-start lines without tracking private facts. */
+export function dialogueVariant(context: DialogueContext): string {
+  const base = contextualLine(context);
+  if (context.hand === 1 && context.status === "hand_in_progress" && context.activePlayers > 2) return base;
+  const alternatives = context.status === "hand_complete" ? [base, "That hand had a rhythm of its own.", "A fresh deal when you're ready."] : context.activePlayers === 2 ? [base, "Two seats, one table. Take your time.", "Heads-up now. Let's keep it measured."] : context.status === "hand_in_progress" ? [base, "The button moves. Another chance to observe.", "Same table, a new set of possibilities."] : [base];
+  return alternatives[(context.hand + Math.floor(publicVariation(context.personality) * 10)) % alternatives.length];
 }

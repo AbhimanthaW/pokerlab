@@ -51,3 +51,24 @@ it("bundles a valid original 146-second PCM piece rather than a short loop", () 
   expect(data.readUInt32LE(24)).toBe(22050); expect(data.readUInt16LE(34)).toBe(16);
   expect((data.length - 44) / 22050 / 2).toBe(146);
 });
+it("changes room ambience once, stops the old source and keeps music/user volumes intact",async()=>{
+ const manager=new AudioManager({...DEFAULT_PREFERENCES,muted:false,master:.5,music:.4},vi.fn());await manager.enable();
+ const old=ctx.createBufferSource.mock.results[0].value;
+ manager.updateRoom("rainy",.3);expect(old.stop).toHaveBeenCalledOnce();expect(old.disconnect).toHaveBeenCalledOnce();expect(ctx.createBufferSource).toHaveBeenCalledTimes(2);
+ manager.updateRoom("rainy",.7);expect(ctx.createBufferSource).toHaveBeenCalledTimes(2);expect(music.volume).toBeCloseTo(.11);expect(AudioCtor).toHaveBeenCalledTimes(1);manager.dispose();
+});
+it("schedules stable spatial effects once and cancels pending sounds when paused/disposed",async()=>{
+ vi.useFakeTimers();const clock=vi.spyOn(performance,"now").mockReturnValue(1000);
+ const panner={...node(),pan:{value:0}},createStereoPanner=vi.fn(()=>panner);
+ vi.stubGlobal("AudioContext",function(){return {...ctx,createStereoPanner};});
+ const manager=new AudioManager({...DEFAULT_PREFERENCES,muted:false},vi.fn());await manager.enable();
+ const cue={id:"tap-1",sound:"tap" as const,at:1200,pan:-.4};manager.schedule([cue],"hand-1");manager.schedule([cue],"hand-1");vi.advanceTimersByTime(200);
+ expect(ctx.createOscillator).toHaveBeenCalledTimes(1);expect(createStereoPanner).toHaveBeenCalledOnce();expect(panner.pan.value).toBe(-.4);
+ manager.schedule([{...cue,id:"tap-2",at:1500}],"hand-1");manager.setInactive(true);vi.advanceTimersByTime(1000);expect(ctx.createOscillator).toHaveBeenCalledTimes(1);
+ manager.setInactive(false);manager.schedule([cue],"hand-1");vi.advanceTimersByTime(1000);expect(ctx.createOscillator).toHaveBeenCalledTimes(1);manager.dispose();expect(vi.getTimerCount()).toBe(0);clock.mockRestore();vi.useRealTimers();
+});
+it("keeps character acknowledgements independently silent and bounds active effect resources",async()=>{
+ const manager=new AudioManager({...DEFAULT_PREFERENCES,muted:false},vi.fn());await manager.enable();manager.updateRoom("night",0);manager.play("reaction");expect(ctx.createOscillator).not.toHaveBeenCalled();
+ for(let i=0;i<40;i++)manager.play("chips");
+ expect(ctx.createOscillator.mock.results.slice(0,24).every((r)=>r.value.disconnect.mock.calls.length>0)).toBe(true);manager.dispose();expect(ctx.createOscillator.mock.results.every((r)=>r.value.disconnect.mock.calls.length>0)).toBe(true);
+});

@@ -1,12 +1,13 @@
 import { useEffect, useMemo } from "react";
 import { CanvasTexture, SRGBColorSpace } from "three";
+import type { CardBack } from "../../night-room/preferences";
 import type { Card } from "../../../domain/types";
 
-function makeTexture(card: Card | null, fourColor: boolean) {
+function makeTexture(card: Card | null, fourColor: boolean, back: CardBack) {
   const canvas = document.createElement("canvas"); canvas.width = 256; canvas.height = 384;
   const c = canvas.getContext("2d");
   if (!c) throw new Error("Card texture canvas unavailable");
-  c.fillStyle = card ? "#fff8e5" : "#173640"; c.fillRect(0, 0, 256, 384);
+  c.fillStyle = card ? "#fff8e5" : back === "burgundy" ? "#522a3b" : back === "lattice" ? "#293f53" : "#173640"; c.fillRect(0, 0, 256, 384);
   c.strokeStyle = "#c6ad76"; c.lineWidth = 4; c.strokeRect(12, 12, 232, 360);
   if (card) {
     const red = card.suit === "hearts" || card.suit === "diamonds";
@@ -21,23 +22,25 @@ function makeTexture(card: Card | null, fourColor: boolean) {
     c.font = "bold 46px Georgia"; c.fillText(rank, 22, 57); c.restore();
   } else {
     c.strokeStyle = "#c6ad7670"; c.lineWidth = 2;
-    for (let i = -384; i < 640; i += 24) {
+    for (let i = -384; i < 640; i += back === "lattice" ? 42 : 24) {
       c.beginPath(); c.moveTo(i, 20); c.lineTo(i + 340, 364); c.stroke();
       c.beginPath(); c.moveTo(i, 364); c.lineTo(i + 340, 20); c.stroke();
     }
-    c.fillStyle = "#173640"; c.beginPath(); c.ellipse(128, 192, 55, 71, 0, 0, Math.PI * 2); c.fill();
-    c.fillStyle = "#e0c790"; c.font = "78px Georgia"; c.textAlign = "center"; c.fillText("♠", 128, 219);
+    c.fillStyle = back === "burgundy" ? "#522a3b" : back === "lattice" ? "#293f53" : "#173640"; c.beginPath(); c.ellipse(128, 192, 55, 71, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = "#e0c790"; c.font = "78px Georgia"; c.textAlign = "center"; c.fillText(back === "lattice" ? "◇" : back === "burgundy" ? "✦" : "♠", 128, 219);
   }
   const texture = new CanvasTexture(canvas); texture.colorSpace = SRGBColorSpace; texture.anisotropy = 4;
   return texture;
 }
 
 /** Serialized card values stay stable when the engine clones its immutable state. */
-export function useCardTexture(card: Card | null, folded: boolean, fourColor: boolean) {
+export function useCardTexture(card: Card | null, folded: boolean, fourColor: boolean, back: CardBack = "classic", sharedBack?: CanvasTexture) {
   const id = folded ? null : card?.id ?? null;
   const rank = folded ? null : card?.rank ?? null;
   const suit = folded ? null : card?.suit ?? null;
-  const texture = useMemo(() => makeTexture(id !== null && rank !== null && suit !== null ? { id, rank, suit } : null, fourColor), [id, rank, suit, fourColor]);
-  useEffect(() => () => texture.dispose(), [texture]);
+  const design = id === null ? back : "classic";
+  const shared = id === null ? sharedBack : undefined;
+  const texture = useMemo(() => id === null && shared ? shared : makeTexture(id !== null && rank !== null && suit !== null ? { id, rank, suit } : null, fourColor, design), [id, rank, suit, fourColor, design, shared]);
+  useEffect(() => () => { if (texture !== shared) texture.dispose(); }, [texture, shared]);
   return texture;
 }

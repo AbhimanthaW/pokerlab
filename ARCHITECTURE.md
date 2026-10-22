@@ -49,3 +49,11 @@ The only original domain-file changes are optional version-1 completed-hand repl
 `domain/probability-lab/engine.ts` owns pure scenario/count/enumeration/simulation math, using canonical cards and the existing evaluator. The Learn editor owns its independent scenario. A dedicated worker runs all final-hand distributions, with typed request identities, throttled progress, cancellation/termination and stale-response rejection. It has no import of Play/replay/session state. Small exact next-draw ratios remain immediate.
 
 V4 adds no runtime dependencies or services. The existing Play and educational storage schemas remain; V4 preferences/public memory use separate version-1 keys. See the V4 design documents for algorithms, tests and limits.
+
+## V5 presentation-only expansion
+
+All domain files are byte-identical to V4. `features/night-room` contains validated optional cosmetic preferences, pure public-event choreography, shared original hand geometry/provider, player/dealer rigs, room atmosphere, customization controls and sound-cue mapping. The existing scene consumes the matched presentation snapshot/event batch. BOARD events add public old/new counts for missing-street choreography, without exposing burns/deck. Private-card flights, dealer stages, pot gestures, camera emphasis and audio derive from stable public event identities, independent of engine timing.
+
+Hand geometry is shared and explicitly disposed; transforms run in the existing R3F loop without per-frame React updates. Rain uses bounded instancing (8 static Low, 24 Medium, 48 High). Standard/Cinematic/Instant mode and inspection/reset/human-turn priority never dispatch game commands. The same components remain available in replay, with speed-adjusted presentation delays and cancellable sound.
+
+The existing AudioManager retains one context/music owner and adds room ambience replacement, at most 16 effect voices, cancellable bounded cue scheduling, deduplication, panning/fallback and a separate character level. Existing V3 volumes remain unchanged. V5 settings are isolated under `pokerlab.room.v5` schema 1. Preview/apply/cancel never changes a session. See the V5 documents for boundaries and unverified browser/performance gates.
