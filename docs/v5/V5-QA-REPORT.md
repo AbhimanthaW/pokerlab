@@ -83,6 +83,42 @@ Hands/arms are lightweight procedural approximations, not finger physics or full
 
 V5.1 priorities: finish real desktop/mobile captures and collision/timing review, profile sustained FPS/GPU/audio retention at all presets, then tune gesture reach, camera emphasis and mix levels from observed evidence. Consider a compatible compressed music alternative only with format/listening regression checks. No V5.1 feature work was started.
 
+
+## Post-release browser verification addendum
+
+**Date:** 22 October 2026
+
+Following the original V5 QA report, the browser launch blocker was resolved in the user's unrestricted native macOS Terminal.
+
+Playwright-managed Chromium was installed with:
+
+```bash
+npx playwright install chromium
+```
+
+An obsolete Action History locator in the 2D Play E2E test was corrected to use the existing native HTML summary disclosure. The test was also strengthened with fractional-raise rejection and exact-session restoration assertions.
+
+The authoritative game engine and runtime UI did not require modification for this repair.
+
+### Final verification
+
+| Check | Result |
+| --- | --- |
+| Focused repaired Playwright test | Passed |
+| Complete Playwright suite | 42/42 passed |
+| Playwright runtime | Approximately 2.5 minutes |
+| Existing unit suite | 260 passed |
+| TypeScript, lint and build | Passed in the V5 implementation verification |
+
+The 42/42 browser result was executed and reported from the user's native macOS environment.
+
+This addendum supersedes the earlier statement that automated browser execution was entirely blocked. Historical sandbox failures remain documented.
+
+Outstanding activities include subjective visual polish review, physical-device audio/touch acceptance, and sustained GPU/FPS profiling.
+
+V5 remains the final learning and simulation edition. No V6 gameplay is included in this release.
+
+
 ## Local launch and verification
 
 ```sh
@@ -153,3 +189,39 @@ Modified:
 - `src/features/living-npcs/behavior.ts`
 - `src/features/replay/ReplayViewer.tsx`
 - `src/features/replay/useReplay.ts`
+
+
+## Post-release browser verification addendum
+
+**Date:** 22 October 2026
+
+Following the original V5 QA report, the browser launch blocker was resolved in the user's unrestricted native macOS Terminal.
+
+Playwright-managed Chromium was installed with:
+
+```bash
+npx playwright install chromium
+```
+
+An obsolete Action History locator in the 2D Play E2E test was corrected to use the existing native HTML summary disclosure. The test was also strengthened with fractional-raise rejection and exact-session restoration assertions.
+
+The authoritative game engine and runtime UI did not require modification for this repair.
+
+### Final verification
+
+| Check | Result |
+| --- | --- |
+| Focused repaired Playwright test | Passed |
+| Complete Playwright suite | 42/42 passed |
+| Playwright runtime | Approximately 2.5 minutes |
+| Existing unit suite | 260 passed |
+| TypeScript, lint and build | Passed in the V5 implementation verification |
+
+The 42/42 browser result was executed and reported from the user's native macOS environment.
+
+This addendum supersedes the earlier statement that automated browser execution was entirely blocked. Historical sandbox failures remain documented.
+
+Outstanding activities include subjective visual polish review, physical-device audio/touch acceptance, and sustained GPU/FPS profiling.
+
+V5 remains the final learning and simulation edition. No V6 gameplay is included in this release.
+

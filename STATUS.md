@@ -1,6 +1,10 @@
 # PokerLab V5 — The Night Room Expansion
 
-**Six-pillar implementation is present and automated checks pass. Browser/visual acceptance is still pending; production visual completion and FPS targets are not claimed.** No deployment or infrastructure.
+**PokerLab V5.0.0 is finalized.** All six V5 feature pillars are implemented. The routine unit suite, TypeScript checks, lint, production build, and native Chromium Playwright suite have passed.
+
+On 22 October 2026, the complete native macOS Playwright suite passed **42/42 tests**, following repair of an outdated Action History test locator.
+
+Manual audio listening, real-device touch testing, comprehensive visual inspection, and sustained GPU/FPS profiling remain separate acceptance activities. No deployment was performed.
 
 Implemented:
 
@@ -24,6 +28,9 @@ Implemented:
 | Fresh browser attempt | Installed Chrome exited SIGABRT before page creation; cleanup reported kill EPERM |
 | Model-only study | Actual polygon hand geometry software-projected and inspected; thumb connectivity corrected |
 | Actual room captures, lighting/collision review, touch/fullscreen/audio listening/GPU profiling | Pending; no pass claimed |
+| Native Playwright browser suite | 42/42 passed on 22 October 2026 |
+| Previously blocked browser execution | Resolved in native macOS Terminal using Playwright-managed Chromium |
+| Manual audio, physical touch and GPU/FPS profiling | Remain unverified |
 
 All original save keys/schemas remain. `pokerlab.room.v5` adds validated optional version-1 cosmetics; corrupt/missing data resets only those cosmetics. No new dependency, financial feature, reward/purchase system, game variant or online service.
 

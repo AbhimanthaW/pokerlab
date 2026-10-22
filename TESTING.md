@@ -30,6 +30,37 @@ Historical V3 result: the focused V3 desktop attempt failed at browser launch, b
 
 Historical V4 attempt: installed Chrome exits SIGABRT before page creation, with kill EPERM during cleanup. See the V4 verification section below.
 
+
+## Final V5 native browser acceptance
+
+**Date:** 22 October 2026
+
+Environment: Native macOS Terminal, Playwright-managed Chromium.
+
+Final results:
+
+- 42 browser tests passed.
+- No browser test failures.
+- Playwright runtime: approximately 2.5 minutes.
+
+The tests cover:
+
+- 3D scene rendering and responsive viewports
+- Legal player actions and NPC interactions
+- Session restoration and chip accounting
+- 2D fallback after renderer failure
+- Play Mode controls and fullscreen rejection
+- V1 educational regression flows
+- Probability Lab and Web Worker behavior
+- Completed-hand replay and safe live return
+- V5 customization, card inspection and session preservation
+
+The earlier Chrome SIGABRT, SIGTRAP and sandbox permission failures were execution-environment blockers encountered during development. Native Chromium testing subsequently succeeded.
+
+The final repaired test uses the native HTML summary disclosure for Action History rather than incorrectly querying a button.
+
+Browser test success does not independently establish audio listening quality, real physical-device touch behavior, or sustained GPU/FPS performance.
+
 ## Manual visual/audio/performance gate
 
 Use V3-QA-REPORT.md's checklist. Inspect actual room/table/characters/cards/chips, seat/order markers, lighting, camera limits/reset, all six viewport sizes, no control overlap and card readability. Complete a session, review pots/history, refresh mid-hand, return to Learn and retry 2D/3D. Test real fullscreen entry/Escape and renderer context loss without losing the hand.
